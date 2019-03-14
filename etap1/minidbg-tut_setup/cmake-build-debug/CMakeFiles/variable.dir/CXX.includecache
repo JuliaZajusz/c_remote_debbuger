@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/examples/variable.cpp
+
