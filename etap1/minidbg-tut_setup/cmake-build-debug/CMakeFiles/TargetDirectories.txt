@@ -1,7 +1,0 @@
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/edit_cache.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/libelfin.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/variable.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/hello.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/unwinding.dir
-/media/dawid/C89800AB980099D8/Studia/Zajecia/Ak2/jul/projekt/etap1/minidbg-tut_setup/cmake-build-debug/CMakeFiles/minidbg.dir

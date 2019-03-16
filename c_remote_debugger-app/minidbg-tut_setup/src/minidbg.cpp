@@ -11,6 +11,7 @@
 
 using namespace minidbg;
 
+//helpers
 std::vector<std::string> split(const std::string &s, char delimiter) {
     std::vector<std::string> out{};
     std::stringstream ss {s};
@@ -28,11 +29,13 @@ bool is_prefix(const std::string& s, const std::string& of) {
     return std::equal(s.begin(), s.end(), of.begin());
 }
 
+
+//obsluga komend debuggera
 void debugger::handle_command(const std::string& line) {
     auto args = split(line,' ');
     auto command = args[0];
 
-    if (is_prefix(command, "cont")) {
+    if (is_prefix(command, "cont")) {  //komenda continue
         continue_execution();
     }
     else {
@@ -40,6 +43,8 @@ void debugger::handle_command(const std::string& line) {
     }
 }
 
+
+//przechwytywanie komend debuggera
 void debugger::run() {
     int wait_status;
     auto options = 0;
@@ -61,15 +66,23 @@ void debugger::continue_execution() {
     waitpid(m_pid, &wait_status, options);
 }
 
+//zastapienie aktualnie wykonywanego programu programem, kóry ma być debugowany
+//ptrace allows us to observe and control the execution of another process by reading registers, reading memory, single stepping and more
 void execute_debugee (const std::string& prog_name) {
-    if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0) {
+    if (ptrace(PTRACE_TRACEME, 0, 0, 0) < 0) {                //ptrace_traceme znaczy, ze proces pozwala obserwowac sie swojemu rodzicowi
         std::cerr << "Error in ptrace\n";
         return;
     }
-    execl(prog_name.c_str(), prog_name.c_str(), nullptr);
+    execl(prog_name.c_str(), prog_name.c_str(), nullptr);  //exec + parametry wykonania (program, nazwa, lista zakonczona nullpoinerem)
 }
 
+
+//wlaczanie debuggowanego programu
 int main(int argc, char* argv[]) {
+
+    for( int i = 0; i<2; i++) {
+        std::cout<<"alam "<<argv[i]<<std::endl;
+    }
     if (argc < 2) {
         std::cerr << "Program name not specified";
         return -1;
@@ -79,12 +92,12 @@ int main(int argc, char* argv[]) {
 
     auto pid = fork();
     if (pid == 0) {
-        //child
+        //jestesmy w procesie dziecku
         execute_debugee(prog);
 
     }
     else if (pid >= 1)  {
-        //parent
+        //jestesmy w procesie rodzicu
         debugger dbg{prog, pid};
         dbg.run();
     }

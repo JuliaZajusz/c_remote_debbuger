@@ -10,6 +10,10 @@ add_executable(hello examples/hello.cpp)
 set_target_properties(hello
                       PROPERTIES COMPILE_FLAGS "-g -O0")
 
+add_executable(adder examples/adder.cpp)
+set_target_properties(adder
+        PROPERTIES COMPILE_FLAGS "-g -O0")
+
 add_executable(variable examples/variable.cpp)
 set_target_properties(variable
                       PROPERTIES COMPILE_FLAGS "-gdwarf-2 -O0")
