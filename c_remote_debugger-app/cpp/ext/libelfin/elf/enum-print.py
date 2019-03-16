@@ -2,8 +2,10 @@
 # Use of this source code is governed by an MIT license
 # that can be found in the LICENSE file.
 
-import sys, re
+import re
+import sys
 from optparse import OptionParser
+
 
 def read_toks():
     data = sys.stdin.read()

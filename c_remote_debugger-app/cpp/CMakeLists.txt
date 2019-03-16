@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (MiniDbg)
+project(RemoteDebugger)
 
 add_compile_options(-std=c++14)
 

@@ -80,9 +80,6 @@ void execute_debugee (const std::string& prog_name) {
 //wlaczanie debuggowanego programu
 int main(int argc, char* argv[]) {
 
-    for( int i = 0; i<2; i++) {
-        std::cout<<"alam "<<argv[i]<<std::endl;
-    }
     if (argc < 2) {
         std::cerr << "Program name not specified";
         return -1;
