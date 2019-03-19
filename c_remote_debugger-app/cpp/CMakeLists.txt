@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project(RemoteDebugger)
+project(MiniDbg)
 
 add_compile_options(-std=c++14)
 
@@ -16,19 +16,19 @@ set_target_properties(adder
 
 add_executable(variable examples/variable.cpp)
 set_target_properties(variable
-                      PROPERTIES COMPILE_FLAGS "-gdwarf-2 -O0")
+        PROPERTIES COMPILE_FLAGS "-gdwarf-2 -O0")
 
 add_executable(unwinding examples/stack_unwinding.cpp)
 set_target_properties(unwinding
-                      PROPERTIES COMPILE_FLAGS "-g -O0")
+        PROPERTIES COMPILE_FLAGS "-g -O0")
 
 
 add_custom_target(
-   libelfin
-   COMMAND make
-   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/ext/libelfin
+        libelfin
+        COMMAND make
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/ext/libelfin
 )
 target_link_libraries(minidbg
-                      ${PROJECT_SOURCE_DIR}/ext/libelfin/dwarf/libdwarf++.so
-                      ${PROJECT_SOURCE_DIR}/ext/libelfin/elf/libelf++.so)
+        ${PROJECT_SOURCE_DIR}/ext/libelfin/dwarf/libdwarf++.so
+        ${PROJECT_SOURCE_DIR}/ext/libelfin/elf/libelf++.so)
 add_dependencies(minidbg libelfin)
