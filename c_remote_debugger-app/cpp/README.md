@@ -1,3 +1,10 @@
+Build:
+
+```
+cmake CMakeLists.txt
+make
+```
+
 From localization
 <your_path>/c_remote_debugger/c_remote_debugger-app/minidbg-tut_setup/cmake-build-debug
 

@@ -1,5 +1,9 @@
-#**
+**
 
 # Allow files and directories
 !/script.sh
-!/cmake-build-debug/**
+!/CMakeLists.txt
+!/src/**
+!/ext/**
+!/include/**
+!/examples/**

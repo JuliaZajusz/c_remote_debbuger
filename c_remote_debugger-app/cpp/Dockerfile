@@ -1,5 +1,5 @@
-# Get the GCC preinstalled image from Docker Hub
-FROM gcc:4.9
+# Get image from Docker Hub
+FROM ubuntu:16.04
 
 # Copy the current folder which contains C++ source code to the Docker image under /usr/src
 COPY . /usr/src/minidbg
@@ -10,11 +10,15 @@ WORKDIR /usr/src/minidbg
 #ENTRYPOINT [ "sh", "-c", "echo $HOME" ]
 
 # Use GCC to compile the Test.cpp source file
-RUN g++ -o Test ./cmake-build-debug/Test.cpp
+RUN apt-get update
+RUN yes | apt-get install cmake
+RUN yes | apt-get install g++
+RUN cmake CMakeLists.txt
+RUN make
+RUN rm -R src include examples CMakeFiles CMakeCache.txt  CMakeLists.txt  Makefile cmake_install.cmake
 
-# Run the program output from the previous step
-#CMD ["./Test"]
-#CMD ["bash"]
 
-#apt-get update
-#apt-get install cmake #chyba -y
+
+#instrukcje-budowanie obrazu i kontenera
+#docker build . -t ubuntui1
+#docker run -ti --rm --name=ubuntuc1 ubuntui1
