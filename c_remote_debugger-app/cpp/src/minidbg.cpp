@@ -507,13 +507,13 @@ void debugger::set_breakpoint_at_address(std::intptr_t addr) {
 }
 
 //przechwytywanie komend debuggera
-void debugger::run(std::string tab[10]) { //todo: zmienic na stala albo inne badziewie
+void debugger::run(std::string *tab, long inputLines) { //todo: zmienic na stala albo inne badziewie
     wait_for_signal();
 
 
-    for (int i = 0; i < 10; i++) { //todo:
-        std::cout << i << "a:" << tab[i] << std::endl;
-        outFile << i << "a:" << tab[i] << std::endl;
+    for (int i = 0; i < inputLines; i++) {
+        std::cout << i << ":" << tab[i] << std::endl;
+        outFile << i << ":" << tab[i] << std::endl;
         handle_command(tab[i]);
 
     }
@@ -545,9 +545,17 @@ int main(int argc, char* argv[]) {
     std::ifstream file;
     //todo: weryfikacja czy plik istnieje i czy jest argv[2]
     file.open(argv[2]);
+    long inputLines = std::count(std::istreambuf_iterator<char>(file),
+                                 std::istreambuf_iterator<char>(), '\n');
+//    inputLines++;
+    file.close();
+    file.open(argv[2]);
+    std::cout << inputLines << std::endl;
 
-    std::string tab[10]; //todo: zmienic na dynamiczne, narazie max 100 werszy
+    std::string *tab;
+    tab = new std::string[inputLines];
     int it = 0;
+    std::string tmp;
     while (!file.eof()) {
         file >> tab[it];
         it++;
@@ -566,8 +574,8 @@ int main(int argc, char* argv[]) {
     else if (pid >= 1)  {
         //jestesmy w procesie rodzicu
         debugger dbg{prog, pid};
-        dbg.run(tab);
-
+        dbg.run(tab, inputLines);
+        delete[] tab;
         dbg.outFile.close();
 
     }

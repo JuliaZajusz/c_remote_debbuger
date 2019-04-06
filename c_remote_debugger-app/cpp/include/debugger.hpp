@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <signal.h>
 #include <fcntl.h>
+#include <algorithm>
 
 #include "dwarf/dwarf++.hh"
 #include "elf/elf++.hh"
@@ -45,10 +46,11 @@ namespace minidbg {
             m_elf = elf::elf{elf::create_mmap_loader(fd)};
             m_dwarf = dwarf::dwarf{dwarf::elf::create_loader(m_elf)};
 
-            outFile.open("output", std::ofstream::out | std::ofstream::app);
+            outFile.open("output");
+
         }
 
-        void run(std::string tab[10]); //todo: zmienic na stala
+        void run(std::string *tab, long inputLines);
         void dump_registers();
         auto read_memory(uint64_t address) -> uint64_t;
         void write_memory(uint64_t address, uint64_t value);

@@ -47,9 +47,12 @@ function run(body) {
         }
         // console.log("docker exec ", body.container, body.command, body.content);
         // var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} ${body.content}`).toString();
-        var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} ${body.content}`).toString();
-        console.log("run: ", script_response);
-        resolve(script_response)
+        var b = child_process.execSync(`docker exec ${body.container} bash -c "cat >> input << ${body.content}"`).toString();
+        var input = child_process.execSync(`docker exec ${body.container} cat input`).toString();
+        var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} input`).toString();
+        var output = child_process.execSync(`docker exec ${body.container} cat output`).toString();
+        var array = output.split("\n")
+        resolve(array)
     })
 }
 
