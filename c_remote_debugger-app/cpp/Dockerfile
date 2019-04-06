@@ -15,3 +15,6 @@ RUN g++ -o Test ./cmake-build-debug/Test.cpp
 # Run the program output from the previous step
 #CMD ["./Test"]
 #CMD ["bash"]
+
+#apt-get update
+#apt-get install cmake #chyba -y
