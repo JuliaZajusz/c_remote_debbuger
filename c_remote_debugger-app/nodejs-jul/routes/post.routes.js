@@ -48,7 +48,7 @@ router.get('/close/:id', async (req, res) => {
 router.post('/run', async (req, res) => {
     await post.run(req.body)
         .then(post => res.status(201).json({
-            message: `The post #${post.id} has been created`,
+            message: `Script executed successfully`,
             content: post
         }))
         .catch(err => res.status(500).json({message: err.message}))

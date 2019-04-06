@@ -46,7 +46,8 @@ function run(body) {
             })
         }
         // console.log("docker exec ", body.container, body.command, body.content);
-        var script_response = child_process.execSync(`./../cpp/run.sh ${body.container} ${body.command} ${body.content}`).toString();
+        // var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} ${body.content}`).toString();
+        var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} ${body.content}`).toString();
         console.log("run: ", script_response);
         resolve(script_response)
     })
