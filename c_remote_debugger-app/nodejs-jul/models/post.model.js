@@ -2,6 +2,7 @@ let posts = require('../data/posts.json')
 const filename = './data/posts.json'
 const helper = require('../helpers/helper.js')
 const shell = require('shelljs')
+const child_process = require('child_process')
 
 function open() {
     return new Promise((resolve, reject) => {
@@ -12,9 +13,42 @@ function open() {
             })
         }
 
-        shell.exec('./../cpp/run.sh');
-        console.log("hello world");
-        resolve("lala")
+        // shell.exec('./../cpp/open.sh');
+        var script_response = child_process.execSync('./../cpp/open.sh').toString()
+        var array = script_response.split("\n")
+        var response = array[array.length - 2]
+        response = response.substring(0, 12)
+        console.log("hello world ", response);
+        resolve(response)
+    })
+}
+
+function close(container) {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+
+        shell.exec(`./../cpp/kill.sh ${container}`);
+        resolve()
+    })
+}
+
+function run(body) {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+        // console.log("docker exec ", body.container, body.command, body.content);
+        var script_response = child_process.execSync(`./../cpp/run.sh ${body.container} ${body.command} ${body.content}`).toString();
+        console.log("run: ", script_response);
+        resolve(script_response)
     })
 }
 
@@ -86,6 +120,8 @@ function deletePost(id) {
 module.exports = {
     insertPost,
     open,
+    close,
+    run,
     getPosts,
     getPost, 
     updatePost,

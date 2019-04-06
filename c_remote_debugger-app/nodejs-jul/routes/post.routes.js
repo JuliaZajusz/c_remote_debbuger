@@ -29,6 +29,34 @@ router.get('/open', async (req, res) => {
         })
 })
 
+router.get('/close/:id', async (req, res) => {
+    const id = req.params.id
+
+    await post.close(id)
+        .then(post => res.json(post))
+        .catch(err => {
+            if (err.status) {
+                res.status(err.status).json({message: err.message})
+            } else {
+                res.status(500).json({message: err.message})
+            }
+        })
+})
+
+
+/* Insert a new post */
+router.post('/run', async (req, res) => {
+    await post.run(req.body)
+        .then(post => res.status(201).json({
+            message: `The post #${post.id} has been created`,
+            content: post
+        }))
+        .catch(err => res.status(500).json({message: err.message}))
+})
+
+
+
+
 /* A post by id */
 router.get('/:id', m.mustBeInteger, async (req, res) => {
     const id = req.params.id

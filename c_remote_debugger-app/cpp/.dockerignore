@@ -1,5 +1,5 @@
 **
 
 # Allow files and directories
-#!/file.txt
+!/script.sh
 !/cmake-build-debug/**

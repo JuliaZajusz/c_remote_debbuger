@@ -7,8 +7,11 @@ COPY . /usr/src/minidbg
 # Specify the working directory
 WORKDIR /usr/src/minidbg
 
+#ENTRYPOINT [ "sh", "-c", "echo $HOME" ]
+
 # Use GCC to compile the Test.cpp source file
 RUN g++ -o Test ./cmake-build-debug/Test.cpp
 
 # Run the program output from the previous step
-CMD ["./Test"]
+#CMD ["./Test"]
+#CMD ["bash"]
