@@ -1,0 +1,133 @@
+let posts = require('../data/posts.json')
+const filename = './data/posts.json'
+const helper = require('../helpers/helper.js')
+const shell = require('shelljs')
+const child_process = require('child_process')
+
+function open() {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+
+        // shell.exec('./../cpp/open.sh');
+        var script_response = child_process.execSync('./../cpp/open.sh').toString()
+        var array = script_response.split("\n")
+        var response = array[array.length - 2]
+        response = response.substring(0, 12)
+        console.log("hello world ", response);
+        resolve(response)
+    })
+}
+
+function close(container) {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+
+        shell.exec(`./../cpp/kill.sh ${container}`);
+        resolve()
+    })
+}
+
+function run(body) {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+        // console.log("docker exec ", body.container, body.command, body.content);
+        // var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} ${body.content}`).toString();
+        var b = child_process.execSync(`docker exec ${body.container} bash -c "cat >> input << ${body.content}"`).toString();
+        var input = child_process.execSync(`docker exec ${body.container} cat input`).toString();
+        var script_response = child_process.execSync(`docker exec ${body.container} ${body.command} input`).toString();
+        var output = child_process.execSync(`docker exec ${body.container} cat output`).toString();
+        var array = output.split("\n")
+        resolve(array)
+    })
+}
+
+function getPosts() {
+    return new Promise((resolve, reject) => {
+        if (posts.length === 0) {
+            reject({
+                message: 'no posts available',
+                status: 202
+            })
+        }
+
+        resolve(posts)
+    })
+}
+
+function getPost(id) {
+    return new Promise((resolve, reject) => {
+        helper.mustBeInArray(posts, id)
+        .then(post => resolve(post))
+        .catch(err => reject(err))
+    })
+}
+
+function insertPost(newPost) {
+    return new Promise((resolve, reject) => {
+        const id = { id: helper.getNewId(posts) }
+        const date = { 
+            createdAt: helper.newDate(),
+            updatedAt: helper.newDate()
+        } 
+        newPost = { ...id, ...date, ...newPost }
+        posts.push(newPost)
+        helper.writeJSONFile(filename, posts)
+        resolve(newPost)
+    })
+}
+
+function updatePost(id, newPost) {
+    return new Promise((resolve, reject) => {
+        helper.mustBeInArray(posts, id)
+        .then(post => {
+            const index = posts.findIndex(p => p.id == post.id)
+            id = { id: post.id }
+            const date = {
+                createdAt: post.createdAt,
+                updatedAt: helper.newDate()
+            } 
+            posts[index] = { ...id, ...date, ...newPost }
+            helper.writeJSONFile(filename, posts)
+            resolve(posts[index])
+        })
+        .catch(err => reject(err))
+    })
+}
+
+function deletePost(id) {
+    return new Promise((resolve, reject) => {
+        helper.mustBeInArray(posts, id)
+        .then(() => {
+            posts = posts.filter(p => p.id !== id)
+            helper.writeJSONFile(filename, posts)
+            resolve()
+        })
+        .catch(err => reject(err))
+    })
+}
+
+module.exports = {
+    insertPost,
+    open,
+    close,
+    run,
+    getPosts,
+    getPost, 
+    updatePost,
+    deletePost
+}

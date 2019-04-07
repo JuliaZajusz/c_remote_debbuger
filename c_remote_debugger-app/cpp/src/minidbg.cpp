@@ -8,8 +8,6 @@
 #include <iomanip>
 
 
-#include "linenoise.h"
-
 #include "debugger.hpp"
 #include "registers.hpp"
 
@@ -17,6 +15,7 @@ using namespace minidbg;
 
 class ptrace_expr_context : public dwarf::expr_context {
 public:
+
     ptrace_expr_context(pid_t pid) : m_pid{pid} {}
 
     dwarf::taddr reg(unsigned regnum) override {
@@ -56,12 +55,16 @@ void debugger::read_variables() {
                     case expr_result::type::address: {
                         auto value = read_memory(result.value);
                         std::cout << at_name(die) << " (0x" << std::hex << result.value << ") = " << value << std::endl;
+                        outFile << at_name(die) << " (0x" << std::hex << result.value << ") = " << value << std::endl;
+                        std::cout << at_name(die) << " (0x" << std::hex << result.value << ") = " << value << std::endl;
+                        outFile << at_name(die) << " (0x" << std::hex << result.value << ") = " << value << std::endl;
                         break;
                     }
 
                     case expr_result::type::reg: {
                         auto value = get_register_value_from_dwarf_register(m_pid, result.value);
                         std::cout << at_name(die) << " (reg " << result.value << ") = " << value << std::endl;
+                        outFile << at_name(die) << " (reg " << result.value << ") = " << value << std::endl;
                         break;
                     }
 
@@ -80,6 +83,7 @@ void debugger::print_backtrace() {
     auto output_frame = [frame_number = 0](auto &&func) mutable {
         std::cout << "frame #" << frame_number++ << ": 0x" << dwarf::at_low_pc(func)
                   << ' ' << dwarf::at_name(func) << std::endl;
+//        outFile << "frame #" << frame_number++ << ": 0x" << dwarf::at_low_pc(func)  << ' ' << dwarf::at_name(func) << std::endl;
     };
 
     auto current_func = get_function_from_pc(get_pc());
@@ -278,19 +282,23 @@ void debugger::print_source(const std::string &file_name, unsigned line, unsigne
 
     //Output cursor if we're at the current line
     std::cout << (current_line == line ? "> " : "  ");
+    outFile << (current_line == line ? "> " : "  ");
 
     //Write lines up until end_line
     while (current_line <= end_line && file.get(c)) {
         std::cout << c;
+        outFile << c;
         if (c == '\n') {
             ++current_line;
             //Output cursor if we're at the current line
             std::cout << (current_line == line ? "> " : "  ");
+            outFile << (current_line == line ? "> " : "  ");
         }
     }
 
     //Write newline and make sure that the stream is flushed properly
     std::cout << std::endl;
+    outFile << std::endl;
 }
 
 siginfo_t debugger::get_signal_info() {
@@ -324,9 +332,11 @@ void debugger::wait_for_signal() {
             break;
         case SIGSEGV:
             std::cout << "Yay, segfault. Reason: " << siginfo.si_code << std::endl;
+            outFile << "Yay, segfault. Reason: " << siginfo.si_code << std::endl;
             break;
         default:
             std::cout << "Got signal " << strsignal(siginfo.si_signo) << std::endl;
+            outFile << "Got signal " << strsignal(siginfo.si_signo) << std::endl;
     }
 }
 
@@ -337,6 +347,7 @@ void debugger::handle_sigtrap(siginfo_t info) {
         case TRAP_BRKPT: {
             set_pc(get_pc() - 1);
             std::cout << "Hit breakpoint at address 0x" << std::hex << get_pc() << std::endl;
+            outFile << "Hit breakpoint at address 0x" << std::hex << get_pc() << std::endl;
             auto line_entry = get_line_entry_from_pc(get_pc());
             print_source(line_entry->file->path, line_entry->line);
             return;
@@ -346,6 +357,7 @@ void debugger::handle_sigtrap(siginfo_t info) {
             return;
         default:
             std::cout << "Unknown SIGTRAP code " << info.si_code << std::endl;
+            outFile << "Unknown SIGTRAP code " << info.si_code << std::endl;
             return;
     }
 }
@@ -363,6 +375,9 @@ void debugger::dump_registers() {
     for (const auto &rd : g_register_descriptors) {
         std::cout << rd.name << " 0x"
                   << std::setfill('0') << std::setw(16) << std::hex << get_register_value(m_pid, rd.r) << std::endl;
+        outFile << rd.name << " 0x" << std::setfill('0') << std::setw(16) << std::hex << get_register_value(m_pid, rd.r)
+                << std::endl;
+
     }
 }
 
@@ -415,6 +430,7 @@ void debugger::handle_command(const std::string& line) {
         }
     } else if (is_prefix(args[1], "read")) {
         std::cout << get_register_value(m_pid, get_register_from_name(args[2])) << std::endl;
+        outFile << get_register_value(m_pid, get_register_from_name(args[2])) << std::endl;
     } else if (is_prefix(args[1], "write")) {
         std::string val{args[3], 2}; //assume 0xVAL
         set_register_value(m_pid, get_register_from_name(args[2]), std::stol(val, 0, 16));
@@ -423,6 +439,7 @@ void debugger::handle_command(const std::string& line) {
 
         if (is_prefix(args[1], "read")) {
             std::cout << std::hex << read_memory(std::stol(addr, 0, 16)) << std::endl;
+            outFile << std::hex << read_memory(std::stol(addr, 0, 16)) << std::endl;
         }
         if (is_prefix(args[1], "write")) {
             std::string val{args[3], 2}; //assume 0xVAL
@@ -436,6 +453,7 @@ void debugger::handle_command(const std::string& line) {
         auto syms = lookup_symbol(args[1]);
         for (auto &&s : syms) {
             std::cout << s.name << ' ' << to_string(s.type) << " 0x" << std::hex << s.addr << std::endl;
+            outFile << s.name << ' ' << to_string(s.type) << " 0x" << std::hex << s.addr << std::endl;
         }
     } else if (is_prefix(command, "stepi")) {
         single_step_instruction_with_breakpoint_check();
@@ -482,21 +500,29 @@ void debugger::set_breakpoint_at_source_line(const std::string &file, unsigned l
 
 void debugger::set_breakpoint_at_address(std::intptr_t addr) {
     std::cout << "Set breakpoint at address 0x" << std::hex << addr << std::endl;
+    outFile << "Set breakpoint at address 0x" << std::hex << addr << std::endl;
     breakpoint bp{m_pid, addr};
     bp.enable();
     m_breakpoints[addr] = bp;
 }
 
 //przechwytywanie komend debuggera
-void debugger::run() {
+void debugger::run(std::string *tab, long inputLines) { //todo: zmienic na stala albo inne badziewie
     wait_for_signal();
 
-    char* line = nullptr;
-    while((line = linenoise("minidbg> ")) != nullptr) {
-        handle_command(line);
-        linenoiseHistoryAdd(line);
-        linenoiseFree(line);
+
+    for (int i = 0; i < inputLines; i++) {
+        std::cout << i << ":" << tab[i] << std::endl;
+        outFile << i << ":" << tab[i] << std::endl;
+        handle_command(tab[i]);
+
     }
+//    char* line = nullptr;
+//    while((line = linenoise("")) != nullptr) {
+//        handle_command(line);
+//        linenoiseHistoryAdd(line);
+//        linenoiseFree(line);
+//    }
 }
 
 void execute_debugee (const std::string& prog_name) {
@@ -516,6 +542,28 @@ int main(int argc, char* argv[]) {
     }
 
     auto prog = argv[1];
+    std::ifstream file;
+    //todo: weryfikacja czy plik istnieje i czy jest argv[2]
+    file.open(argv[2]);
+    long inputLines = std::count(std::istreambuf_iterator<char>(file),
+                                 std::istreambuf_iterator<char>(), '\n');
+//    inputLines++;
+    file.close();
+    file.open(argv[2]);
+    std::cout << inputLines << std::endl;
+
+    std::string *tab;
+    tab = new std::string[inputLines];
+    int it = 0;
+    std::string tmp;
+    while (!file.eof()) {
+        file >> tab[it];
+        it++;
+    }
+
+    file.close();
+
+
 
     auto pid = fork();
     if (pid == 0) {
@@ -526,6 +574,11 @@ int main(int argc, char* argv[]) {
     else if (pid >= 1)  {
         //jestesmy w procesie rodzicu
         debugger dbg{prog, pid};
-        dbg.run();
+        dbg.run(tab, inputLines);
+        delete[] tab;
+        dbg.outFile.close();
+
     }
+
+
 }

@@ -1,0 +1,10 @@
+**
+
+# Allow files and directories
+!/script.sh
+!/CMakeLists.txt
+!/input
+!/src/**
+!/ext/**
+!/include/**
+!/examples/**
