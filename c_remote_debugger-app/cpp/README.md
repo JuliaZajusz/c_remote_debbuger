@@ -41,6 +41,23 @@ run:
 
 first argument is a name of debugged file
 
+
+How to set breakpoints:
+on address:
+```break 0xaddr```
+where addr is line address from `objdump -d <filename>` in main section
+
+on line:
+```break filename.cpp:line_number```
+
+
+
+
+
+
+
+
+
 Considered solutions and links to resources
 
 RESTAPI  
@@ -68,3 +85,12 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/re
 
 DOCKER
 https://devblogs.microsoft.com/cppblog/c-development-with-docker-containers-in-visual-studio-code/
+
+
+
+// przydatne
+
+docker exec -t  59585fc2f136 ./minidbg hello input
+docker exec 59585fc2f136 cat -E input
+docker exec -ti 59585fc2f136 nano input
+ 
