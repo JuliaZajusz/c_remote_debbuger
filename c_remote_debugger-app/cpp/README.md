@@ -55,6 +55,9 @@ on line:
 ##Bibliography
 Considered solutions and links to resources
 
+NODEJS APP:
+https://medium.com/@etiennerouzeaud/how-create-an-api-restfull-in-express-node-js-without-database-b030c687e2ea
+
 RESTAPI  
 https://stackify.com/rest-api-tutorial/  
 https://restfulapi.net/rest-api-design-tutorial-with-example/  
