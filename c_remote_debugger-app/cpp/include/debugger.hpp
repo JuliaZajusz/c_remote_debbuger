@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <signal.h>
 #include <fcntl.h>
-#include <algorithm>
 
 #include "dwarf/dwarf++.hh"
 #include "elf/elf++.hh"
@@ -45,12 +44,9 @@ namespace minidbg {
 
             m_elf = elf::elf{elf::create_mmap_loader(fd)};
             m_dwarf = dwarf::dwarf{dwarf::elf::create_loader(m_elf)};
-
-            outFile.open("output");
-
         }
 
-        void run(std::string *tab, long inputLines);
+        void run();
         void dump_registers();
         auto read_memory(uint64_t address) -> uint64_t;
         void write_memory(uint64_t address, uint64_t value);
@@ -69,8 +65,6 @@ namespace minidbg {
         void print_source(const std::string& file_name, unsigned line, unsigned n_lines_context=2);
         auto lookup_symbol(const std::string&) -> std::vector<symbol>;
 
-        std::ofstream outFile;
-
     private:
         void single_step_instruction(); //single step without checking breakpoints
         void step_over_breakpoint();
@@ -87,7 +81,6 @@ namespace minidbg {
         dwarf::dwarf m_dwarf;
         elf::elf m_elf;
         std::unordered_map<std::intptr_t,breakpoint> m_breakpoints;
-
     };
 }
 

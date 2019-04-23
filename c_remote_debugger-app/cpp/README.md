@@ -7,20 +7,12 @@ npm run dev
 ```
 
 ##Api requests:
-GET
-```
-http://localhost:1337/api/v1/posts/open
-
-http://localhost:1337/api/v1/posts/close/5b23108c8a3b
-```
 
 POST
 ```
 http://localhost:1337/api/v1/posts/run
 {
-	"container": "d4d2963c8357",
-	"command": "./minidbg hello",
-	"content": "cont"
+	"filename": "hello"
 }
 ```
 
@@ -88,3 +80,11 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/re
 
 DOCKER
 https://devblogs.microsoft.com/cppblog/c-development-with-docker-containers-in-visual-studio-code/
+
+
+
+#Useful commands
+docker exec -t  59585fc2f136 ./minidbg hello input
+docker exec 59585fc2f136 cat -E input
+docker exec -ti 59585fc2f136 nano input
+ 

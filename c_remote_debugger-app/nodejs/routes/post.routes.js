@@ -3,48 +3,7 @@ const router = express.Router()
 const post = require('../models/post.model')
 const m = require('../helpers/middlewares')
 
-/* All posts */
-// router.get('/', async (req, res) => {
-//     await post.getPosts()
-//     .then(posts => res.json(posts))
-//     .catch(err => {
-//         if (err.status) {
-//             res.status(err.status).json({ message: err.message })
-//         } else {
-//             res.status(500).json({ message: err.message })
-//         }
-//     })
-// })
-
-router.get('/open', async (req, res) => {
-    console.log('open')
-    await post.open()
-        .then(posts => res.json(posts))
-        .catch(err => {
-            if (err.status) {
-                res.status(err.status).json({ message: err.message })
-            } else {
-                res.status(500).json({ message: err.message })
-            }
-        })
-})
-
-router.get('/close/:id', async (req, res) => {
-    const id = req.params.id
-
-    await post.close(id)
-        .then(post => res.json(post))
-        .catch(err => {
-            if (err.status) {
-                res.status(err.status).json({message: err.message})
-            } else {
-                res.status(500).json({message: err.message})
-            }
-        })
-})
-
-
-/* Insert a new post */
+/* Run program */
 router.post('/run', async (req, res) => {
     await post.run(req.body)
         .then(post => res.status(201).json({
