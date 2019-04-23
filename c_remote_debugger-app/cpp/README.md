@@ -1,12 +1,12 @@
 Docker is required :)
 
-Run webapp:
+##Run webapp:
 ```
 cd nodejs
 npm run dev
 ```
 
-Api requests:
+##Api requests:
 GET
 ```
 http://localhost:1337/api/v1/posts/open
@@ -26,13 +26,14 @@ http://localhost:1337/api/v1/posts/run
 
 
 
-Build:
+##Build:
 
 ```
 cmake CMakeLists.txt
 make
 ```
 
+##Run
 From localization
 <your_path>/c_remote_debugger/c_remote_debugger-app/minidbg-tut_setup/cmake-build-debug
 
@@ -41,6 +42,25 @@ run:
 
 first argument is a name of debugged file
 
+
+##How to set breakpoints:
+on address:
+```break 0xaddr```
+where addr is line address from `objdump -d <filename>` in main section
+
+on line:
+```break filename.cpp:line_number```
+
+
+
+
+
+
+
+
+
+
+##Bibliography
 Considered solutions and links to resources
 
 RESTAPI  
