@@ -1,0 +1,124 @@
+<style>
+
+.somethingRed
+{
+	color:Blue
+}
+</style>
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+</script>
+</head>
+
+<h1 class="somethingRed" id="bigheader" >DEBUGGER</h1>
+<span id="normaltext"> program name:</span>
+<input id="programName"> <button id="openBtn" onclick="openBtnClick()">open</button>
+<BR>
+<span id="normaltext"> Set breakpoint at line:</span>
+<input id="debugLine"> <button id="setBreakpointButton" onclick="setBreakpointBtnClick()">set</button>
+<br>
+<button id="continueButton" onclick="continueBtnClick()">continue</button>
+<button id="showVariablesButton" onclick="showVariablesBtnClick()">show variables</button>
+<button id="checkOutputBtn" onclick="checkOutputBtnClick()">check output</button>
+<script>
+var a = 7;
+console.log("hello world");
+
+function openBtnClick(val){
+	var programName = $('#programName').val();
+
+      $.ajax({
+		url: "http://localhost:1337/api/v1/posts/openProgram",
+		method: "POST",
+	        data:{
+			filename:programName
+		 },
+		 success: function(data, state){
+			 console.log(data);
+		 },
+		error: function(data, state){
+			console.log('failure');
+            console.log(data);
+			console.log(state);	  
+		}
+      });
+}
+
+function setBreakpointBtnClick(val){
+	var debugLine = $('#debugLine').val();
+
+      $.ajax({
+		url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
+		method: "POST",
+	        data:{
+			line:debugLine
+		 },
+		 success: function(data, state){
+			 console.log(data);
+		 },
+		error: function(data, state){
+			console.log('failure');
+            console.log(data);
+			console.log(state);	  
+		}
+      });
+}
+
+function continueBtnClick(val){
+
+      $.ajax({
+		url: "http://localhost:1337/api/v1/posts/continueExecution",
+		method: "POST",
+		 success: function(data, state){
+			 console.log(data);
+		 },
+		error: function(data, state){
+			console.log('failure');
+        	console.log(data);
+			console.log(state);	  
+		}
+      });
+}
+
+function showVariablesBtnClick(val){
+	console.log('running');
+
+      $.ajax({
+		url: "http://localhost:1337/api/v1/posts/showVariables",
+		method: "POST",
+		 success: function(data, state){
+			 console.log(data);
+		 },
+		error: function(data, state){
+			console.log('failure');
+        	console.log(data);
+			console.log(state);	  
+		}
+      });
+}
+
+function checkOutputBtnClick(val){
+	console.log('running');
+
+      $.ajax({
+		url: "http://localhost:1337/api/v1/posts/checkoutput",
+		method: "POST",
+		 success: function(data, state){
+			 console.log(data);
+		 },
+		error: function(data, state){
+			console.log('failure');
+        	console.log(data);
+			console.log(state);	  
+		}
+      });
+}
+
+
+</script>
+
+
+
+
+
