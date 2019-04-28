@@ -1,7 +1,8 @@
 // Import packages
 const express = require('express')
 const morgan = require('morgan')
-const cors = require('cors');
+const cors = require('cors')
+const path = require('path')
 // App
 const app = express()
 // Morgan
@@ -11,6 +12,7 @@ app.use(morgan('tiny'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(require('./routes/index.routes'))
+app.use(express.static(__dirname + '/node_modules/bootstrap/dist'));
 app.use(function(req, res, next) {
 
     res.header("Access-Control-Allow-Origin", "*");

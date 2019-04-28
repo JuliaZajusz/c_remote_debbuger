@@ -2,6 +2,7 @@ let posts = require('../data/posts.json')
 const filename = './data/posts.json'
 const helper = require('../helpers/helper.js')
 const shell = require('shelljs')
+var fs = require('fs');
 const exec = require('child_process').exec;
 var outputArray = [];
 var programProcess;
@@ -31,18 +32,62 @@ function openProgram(body){
 
 }
 
+function readSource(body)
+{
+    
+    var contents = fs.readFileSync('./../cpp/examples/' +body.filename+'.cpp', 'utf8');
+    return contents;
+}
+
+function manualInput(body)
+{
+    var maninput = body.maninput; 
+    programProcess.stdin.write(maninput+'\n');
+    return 'manual input request complete';
+
+}
+
 function setLineBreakpoint(body)
 {
     var line = body.line; 
     programProcess.stdin.write('b :'+line+' \n');
-    return 'breakpoint request complete';
+    return 'breakpoint line request complete';
+
+}
+
+function setAddresBreakpoint(body)
+{
+    var addres = body.addres; 
+    programProcess.stdin.write('b 0x'+addres+' \n');
+    return 'breakpoint addres request complete';
 
 }
 
 function continueExecution(body)
 {
-    programProcess.stdin.write('c \n');
+    programProcess.stdin.write('cont \n');
     return 'continue request complete';
+
+}
+
+function stepExecution(body)
+{
+    programProcess.stdin.write('step \n');
+    return 'step request complete';
+
+}
+
+function nextExecution(body)
+{
+    programProcess.stdin.write('next \n');
+    return 'next request complete';
+
+}
+
+function finishExecution(body)
+{
+    programProcess.stdin.write('finish \n');
+    return 'finish request complete';
 
 }
 
@@ -52,6 +97,15 @@ function showVariables(body)
     return 'variable request complete';
 
 }
+
+function showRegisters(body)
+{
+    programProcess.stdin.write('register dump \n');
+    return 'register request complete';
+
+}
+
+
 
 
 function checkOutput()
@@ -65,6 +119,13 @@ module.exports = {
     openProgram,
     checkOutput,
     continueExecution,
+    stepExecution,
+    nextExecution,
+    finishExecution,
     showVariables,
-    setLineBreakpoint
+    showRegisters,
+    manualInput,
+    setLineBreakpoint,
+    setAddresBreakpoint,
+    readSource
 }

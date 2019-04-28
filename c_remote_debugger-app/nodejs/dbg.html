@@ -1,124 +1,341 @@
+<link rel="stylesheet" href="css/bootstrap.css"/>
+
 <style>
 
-.somethingRed
-{
-	color:Blue
+    #editor {
+        width: 100%;
+        height: 100%;
+    }
+	.somethingRed
+	{
+		color:Blue
+	}
+	.myMarker {
+ 	 position:absolute;
+ 	 background:rgba(100,200,100,0.5);
+ 	 z-index:20
+	}
+
+	.ace_gutter-cell.ace_breakpoint{ 
+   	 border-radius: 20px 0px 0px 20px; 
+   	 box-shadow: 0px 0px 1px 1px red inset; 
+	} 
+
+	</style>
+	
+	<head>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
+	<!-- Latest compiled and minified CSS -->
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+	</script>
+	</head>
+		<h1>Remote debugger</h1>
+		  </div>
+		  
+	<span id="normaltext" class="label label-default col-3"> Program name:</span>
+	<input id="programName"> <button id="openBtn" class="btn btn-primary btn-sm" onclick="openBtnClick()">open</button>
+	<BR>
+	<span id="normaltext" class="label label-default col-3"> Set breakpoint at line:</span>
+	<input id="debugLine"> <button id="setBreakpointButton" class="btn btn-primary btn-sm" onclick="setBreakpointBtnClick()">set</button>
+	<span id="normaltext" class="label label-default col-3"> Set breakpoint at addres:</span>
+	<input id="debugAddres"> <button id="setBreakpointAddresButton" class="btn btn-primary btn-sm" onclick="setBreakpointAddresBtnClick()">set</button>
+	<br>
+	<button id="continueButton" class="btn btn-primary btn-sm" onclick="continueBtnClick()">continue</button>
+	<button id="stepButton" class="btn btn-primary btn-sm" onclick="stepBtnClick()">step in</button>
+	<button id="nextButton" class="btn btn-primary btn-sm" onclick="nextBtnClick()">step over</button>
+	<button id="finishButton" class="btn btn-primary btn-sm" onclick="finishBtnClick()">step out</button>
+	<button class="btn btn-primary btn-sm" onclick="showVariablesBtnClick()">show variables</button>
+	<button id="registersButton" class="btn btn-primary btn-sm" onclick="showRegistersBtnClick()">show registers</button>
+	<span id="normaltext" class="label label-default col-3"> Write command:</span>
+	<input id="manualinput"> <button id="maninputButton" class="btn btn-primary btn-sm" onclick="manInputBtnClick()">submit</button>
+	<div id = wrapper style="height:200px; width:400px;">
+			<div id="editor">
+				//Load a file to see the contents
+			</div>
+	</div>
+	<div id="output" class="pre-scrollable" style="height:200px"> </div>
+	<script language="javascript" src="js/bootstrap.min.js"></script>
+
+	<script>
+	var EditSession = require("ace/edit_session").EditSession;
+
+	var editor = ace.edit("editor");
+		editor.setTheme("ace/theme/dracula");
+		editor.setReadOnly(true);
+		editor.setShowPrintMargin(false);
+		var Range = ace.require('ace/range').Range;
+		editor.session.addMarker(new Range(3, 0, 4, 1), "myMarker", "fullLine");
+	   
+		editor.on("guttermousedown", function(e){ 
+			var target = e.domEvent.target; 
+			if (target.className.indexOf("ace_gutter-cell") == -1) 
+				return; 
+			if (!editor.isFocused()) 
+				return; 
+			if (e.clientX > 25 + target.getBoundingClientRect().left) 
+				return; 
+
+			var row = e.getDocumentPosition().row 
+			e.editor.session.setBreakpoint(row) 
+			e.stop() 
+		}) 
+
+	function openBtnClick(val){
+		var programName = $('#programName').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/openProgram",
+			method: "POST",
+				data:{
+				filename:programName
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+		  $('#output').html('');
+		  readFile();
+	}
+	
+	function manInputBtnClick(val){
+		var maninput = $('#manualinput').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/manualInput",
+			method: "POST",
+				data:{
+				maninput:maninput
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
+
+
+	function setBreakpointBtnClick(val){
+		var debugLine = $('#debugLine').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
+			method: "POST",
+				data:{
+				line:debugLine
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
+
+	function setBreakpointAddresBtnClick(val){
+		var debugAddres = $('#debugAddres').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/setAddresBreakpoint",
+			method: "POST",
+				data:{
+				addres:debugAddres
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
+	
+	function continueBtnClick(val){
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/continueExecution",
+			method: "POST",
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
+
+	function stepBtnClick(val){
+	
+	$.ajax({
+	url: "http://localhost:1337/api/v1/posts/stepExecution",
+	method: "POST",
+	 success: function(data, state){
+		 console.log(data);
+	 },
+	error: function(data, state){
+		console.log('failure');
+		console.log(data);
+		console.log(state);	  
+	}
+	});
 }
-</style>
 
-<head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
-</script>
-</head>
-
-<h1 class="somethingRed" id="bigheader" >DEBUGGER</h1>
-<span id="normaltext"> program name:</span>
-<input id="programName"> <button id="openBtn" onclick="openBtnClick()">open</button>
-<BR>
-<span id="normaltext"> Set breakpoint at line:</span>
-<input id="debugLine"> <button id="setBreakpointButton" onclick="setBreakpointBtnClick()">set</button>
-<br>
-<button id="continueButton" onclick="continueBtnClick()">continue</button>
-<button id="showVariablesButton" onclick="showVariablesBtnClick()">show variables</button>
-<button id="checkOutputBtn" onclick="checkOutputBtnClick()">check output</button>
-<script>
-var a = 7;
-console.log("hello world");
-
-function openBtnClick(val){
-	var programName = $('#programName').val();
-
-      $.ajax({
-		url: "http://localhost:1337/api/v1/posts/openProgram",
-		method: "POST",
-	        data:{
-			filename:programName
-		 },
-		 success: function(data, state){
-			 console.log(data);
-		 },
-		error: function(data, state){
-			console.log('failure');
-            console.log(data);
-			console.log(state);	  
-		}
-      });
+function nextBtnClick(val){
+	
+	$.ajax({
+	url: "http://localhost:1337/api/v1/posts/nextExecution",
+	method: "POST",
+	 success: function(data, state){
+		 console.log(data);
+	 },
+	error: function(data, state){
+		console.log('failure');
+		console.log(data);
+		console.log(state);	  
+	}
+	});
 }
 
-function setBreakpointBtnClick(val){
-	var debugLine = $('#debugLine').val();
-
-      $.ajax({
-		url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
-		method: "POST",
-	        data:{
-			line:debugLine
-		 },
-		 success: function(data, state){
-			 console.log(data);
-		 },
-		error: function(data, state){
-			console.log('failure');
-            console.log(data);
-			console.log(state);	  
-		}
-      });
+function finishBtnClick(val){
+	
+	$.ajax({
+	url: "http://localhost:1337/api/v1/posts/finishExecution",
+	method: "POST",
+	 success: function(data, state){
+		 console.log(data);
+	 },
+	error: function(data, state){
+		console.log('failure');
+		console.log(data);
+		console.log(state);	  
+	}
+	});
 }
+	
+	function showVariablesBtnClick(val){
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/showVariables",
+			method: "POST",
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
 
-function continueBtnClick(val){
+	function showRegistersBtnClick(val){
+		var programName = $('#programName').val();
+	
+		  $.ajax({
+				url: "http://localhost:1337/api/v1/posts/showRegisters",
+			method: "POST",
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
 
-      $.ajax({
-		url: "http://localhost:1337/api/v1/posts/continueExecution",
-		method: "POST",
-		 success: function(data, state){
-			 console.log(data);
-		 },
-		error: function(data, state){
-			console.log('failure');
-        	console.log(data);
-			console.log(state);	  
-		}
-      });
-}
+	function openBtnClick(val){
+		var programName = $('#programName').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/openProgram",
+			method: "POST",
+				data:{
+				filename:programName
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+		  $('#output').html('');
+		  readFile();
+	}
+	
+	function checkOutputBtnClick(val){
+	
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/checkoutput",
+			method: "POST",
+			 success: function(data, state){
+				 for(var i = 0; i< data.response.length; i++)
+				 {
+					var str = data.response[i];
+					var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
+					$('#output').append(breaks);
+					console.log(data);
+				}
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
 
-function showVariablesBtnClick(val){
-	console.log('running');
+	setInterval(checkOutputBtnClick, 100);
+	function readFile(val){
+		var programName = $('#programName').val();
+	
+		  $.ajax({
+			url: "http://localhost:1337/api/v1/posts/readSource",
+			method: "POST",
+				data:{
+				filename:programName
+			 },
+			 success: function(data, state){
+				 console.log(data);
+				 editor.setSession(new EditSession(data.response));
 
-      $.ajax({
-		url: "http://localhost:1337/api/v1/posts/showVariables",
-		method: "POST",
-		 success: function(data, state){
-			 console.log(data);
-		 },
-		error: function(data, state){
-			console.log('failure');
-        	console.log(data);
-			console.log(state);	  
-		}
-      });
-}
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+		  });
+	}
 
-function checkOutputBtnClick(val){
-	console.log('running');
-
-      $.ajax({
-		url: "http://localhost:1337/api/v1/posts/checkoutput",
-		method: "POST",
-		 success: function(data, state){
-			 console.log(data);
-		 },
-		error: function(data, state){
-			console.log('failure');
-        	console.log(data);
-			console.log(state);	  
-		}
-      });
-}
-
-
-</script>
-
-
-
-
-
+	
+	
+	</script>
+	
+	
+	
+	
+	
+	
