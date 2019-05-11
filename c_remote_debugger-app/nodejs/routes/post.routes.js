@@ -94,4 +94,13 @@ router.post('/checkoutput', function(req, res){
     res.json({response: result});
 })
 
+
+router.post('/postFile', function (req, res) {
+
+    var result = post.postFile(req.body);
+
+    res.json({response: result});
+})
+
+
 module.exports = router

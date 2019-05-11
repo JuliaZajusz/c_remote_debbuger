@@ -1,8 +1,12 @@
-Docker is required :)
+##Requirements:
+nodejs
+cmake
+
 
 ##Run webapp:
 ```
 cd nodejs
+npm run prepare
 npm run dev
 ```
 

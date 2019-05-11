@@ -115,7 +115,15 @@ function checkOutput()
     return result;
 }
 
-module.exports = {   
+function postFile(data) {
+    fs.writeFile("/", data.file, function (err) {
+        console.log("err ", err)
+        // Do something with the data (which holds the file information)
+    });
+}
+
+module.exports = {
+    postFile,
     openProgram,
     checkOutput,
     continueExecution,
