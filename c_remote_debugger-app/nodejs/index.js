@@ -1,5 +1,6 @@
 // Import packages
 const express = require('express')
+const path = require('path')
 const morgan = require('morgan')
 const cors = require('cors')
 // App
@@ -17,3 +18,6 @@ app.get('/', (req, res) => {
 })
 // Starting server
 app.listen('1337')
+
+app.get("/", express.static(path.join(__dirname, "./public")));
+

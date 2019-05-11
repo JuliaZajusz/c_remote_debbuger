@@ -21,12 +21,14 @@ export const readFile = (programName) => {
 }
 
 export const sendFile = (file, formData, headers) => {
-    return axios.post(`${api}/api/v1/posts/postFile`, {
-        formData: formData,
-        file: file
-    }, {
+    console.log('dawfile');
+    console.log(file);
+    return axios.post(`${api}/api/v1/posts/postFile`,
+        formData
+        , {
         headers: {
             'content-type': 'multipart/form-data'
         }
-    })
+        }
+    )
 }

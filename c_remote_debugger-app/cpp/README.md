@@ -8,6 +8,7 @@ cmake
 cd nodejs
 npm run prepare
 npm run dev
+npm run frontend
 ```
 
 ##Api requests:

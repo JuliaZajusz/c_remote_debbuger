@@ -14,7 +14,8 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            file: null
+            file: null,
+            isLoaded: false
         }
         this.onFormSubmit = this.onFormSubmit.bind(this)
         this.onChange = this.onChange.bind(this)
@@ -31,19 +32,12 @@ class App extends React.Component {
     }
 
     fileUpload(file) {
-        const url = 'http://example.com/file-upload';
         const formData = new FormData();
-        formData.append('file', file)
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
-        }
-        console.log(file, url, formData, config)
+        formData.append('uploadedFile', file)
         sendFile(file, formData).then((response) => {
+            this.setState({isLoaded: true})
             console.log(response.data);
         })
-        // return  post(url, formData,config)
     }
 
     manInputBtnClick(val) {
@@ -211,7 +205,7 @@ class App extends React.Component {
     }
 
 
-    openBtnClick(val) {
+    onDebug(val) {
         runDbg(val).then(
             () => {
                 readFile(val)
@@ -290,15 +284,21 @@ class App extends React.Component {
                                     <Grid item xs={24}>
                                         <form onSubmit={this.onFormSubmit}>
                                             <h1>File Upload</h1>
-                                            <input type="file" onChange={this.onChange}/>
+                                            <input type="file" name="uploadedFile" onChange={this.onChange}/>
                                             <button type="submit">Upload</button>
                                         </form>
                                     </Grid>
                                     <Grid item xs={24}>
-                                        Program name:
-                                        <Input id="programName"/>
-                                        <Button variant="contained" id="openBtn" className="btn btn-primary btn-sm"
-                                                onClick={() => this.openBtnClick()}>open</Button>
+                                        {(this.state.file && this.state.isLoaded) &&
+                                        <div>
+                                            Program name: {this.state.file.name}
+                                            <Button variant="contained" id="openBtn" className="btn btn-primary btn-sm"
+                                                    onClick={() => this.onDebug()}>debug</Button>
+                                        </div>
+
+
+                                        }
+
                                     </Grid>
                                     <Grid item xs={24}>
                                     <span id="normaltext"

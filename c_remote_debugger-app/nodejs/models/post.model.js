@@ -10,7 +10,7 @@ var programProcess;
 function openProgram(body){
     
     console.log(body);
-    programProcess = exec(`./../cpp/minidbg ./../cpp/` + body.filename);
+    programProcess = exec(`./../cpp/minidbg ./public/uploads` + body.filename);
     
     programProcess.stdout.on('data', function(data){
 
@@ -115,15 +115,8 @@ function checkOutput()
     return result;
 }
 
-function postFile(data) {
-    fs.writeFile("/", data.file, function (err) {
-        console.log("err ", err)
-        // Do something with the data (which holds the file information)
-    });
-}
 
 module.exports = {
-    postFile,
     openProgram,
     checkOutput,
     continueExecution,

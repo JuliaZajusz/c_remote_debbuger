@@ -7,6 +7,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include <netdb.h>
+#include <string.h>
+
 
 #include "linenoise.h"
 
@@ -353,7 +356,7 @@ void debugger::handle_sigtrap(siginfo_t info) {
 
 void debugger::continue_execution() {
     step_over_breakpoint();
-    ptrace(PTRACE_CONT, m_pid, nullptr, nullptr);
+    long a = ptrace(PTRACE_CONT, m_pid, nullptr, nullptr);
     wait_for_signal();
 }
 
@@ -387,7 +390,9 @@ bool is_prefix(const std::string& s, const std::string& of) {
 
 
 //obsluga komend debuggera
-void debugger::handle_command(const std::string& line) {
+void debugger::handle_command(const std::string &line1) {
+    std::string line = line1.substr(0, line1.size() - 1);
+    std::cout << "." << line << "." << std::endl;
     auto args = split(line,' ');
     auto command = args[0];
 
@@ -491,9 +496,53 @@ void debugger::set_breakpoint_at_address(std::intptr_t addr) {
 void debugger::run() {
     wait_for_signal();
 
+
+    /* Now start listening for the clients, here process will
+     * go in sleep mode and will wait for the incoming connection
+  */
+
+    listen(sockfd, 5);
+    clilen = sizeof(cli_addr);
+
+    /* Accept actual connection from the client */
+    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+
+    if (newsockfd < 0) {
+        perror("ERROR on accept");
+        exit(1);
+    }
+
+    /* If connection is established then start communicating */
+    bzero(buffer, 256);
+
     char *line = nullptr;
-    while ((line = linenoise("minidbg> ")) != nullptr) {
-        handle_command(line);
+//    while ((line = linenoise("minidbg> ")) != nullptr) {
+    while (((n = static_cast<int>(read(newsockfd, buffer, 255)))) >= 0) {
+
+//        n = read( newsockfd,buffer,255 );
+
+        if (n < 0) {
+            perror("ERROR reading from socket");
+            exit(1);
+        }
+
+        printf("Here is the message: %s\n", buffer);
+
+        /* Write a response to the client */
+        n = write(newsockfd, "I got your message", 18);
+
+        if (n < 0) {
+            perror("ERROR writing to socket");
+            exit(1);
+        }
+
+
+
+
+
+
+//        handle_command(line);
+        handle_command(buffer);
         linenoiseHistoryAdd(line);
         linenoiseFree(line);
     }
@@ -510,12 +559,43 @@ void execute_debugee (const std::string& prog_name) {
 
 //wlaczanie debuggowanego programu
 int main(int argc, char* argv[]) {
+
+    //sprawdzenie czy parametry sa podane
     if (argc < 2) {
         std::cerr << "Program name not specified";
         return -1;
     }
-
     auto prog = argv[1];
+
+    //UNIX SOCKETS
+
+    /* First call to socket() function */
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    //sockfd = socket(AF_UNIX, UDS_SOCK_TYPE, 0);
+
+    if (sockfd < 0) {
+        perror("ERROR opening socket");
+        exit(1);
+    }
+
+    /* Initialize socket structure */
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    portno = 5003;
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(portno);
+    printf("addr %d", INADDR_ANY);
+
+    /* Now bind the host address using bind() call.*/
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        perror("ERROR on binding");
+        exit(1);
+    }
+
+
+
+
 
     auto pid = fork();
     if (pid == 0) {

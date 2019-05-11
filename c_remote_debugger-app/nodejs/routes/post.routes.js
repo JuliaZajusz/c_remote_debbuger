@@ -19,6 +19,28 @@ router.post('/openProgram', function (req, res){
 
 })
 
+router.post('/tryipc', function (req, res) {
+
+    var net = require('net');
+
+
+    console.log('a')
+    // var client = net.createConnection("/tmp/uds.1234");
+    var client = net.createConnection(5003, "127.0.0.1");
+    console.log('b')
+
+    client.on("connect", function () {
+// ... do something when you connect ...
+        client.write(req.body.command);
+    });
+    console.log('c')
+
+    client.on("data", function (data) {
+        console.log(data)
+// ... do stuff with the data ...
+    });
+});
+
 router.post('/setLineBreakpoint', function (req, res){
 
     var result = post.setLineBreakpoint(req.body);
@@ -95,11 +117,27 @@ router.post('/checkoutput', function(req, res){
 })
 
 
-router.post('/postFile', function (req, res) {
+//load file
+const multer = require("multer");
 
-    var result = post.postFile(req.body);
+const storage = multer.diskStorage({
+    destination: "./public/uploads/",
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
 
-    res.json({response: result});
+const upload = multer({
+    storage: storage,
+    limits: {fileSize: 1000000},
+}).single("uploadedFile");
+
+
+router.post("/postFile", (req, res) => {
+    upload(req, res, (err) => {
+        if (!err)
+            return res.send(200).end();
+    })
 })
 
 

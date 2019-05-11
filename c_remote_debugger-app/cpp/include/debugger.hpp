@@ -36,6 +36,14 @@ namespace minidbg {
         std::uintptr_t addr;
     };
 
+    //unix socket globals
+    int sockfd, newsockfd, portno;//, clilen;
+    socklen_t clilen;
+    char buffer[256];
+    struct sockaddr_in serv_addr, cli_addr;
+    int n;
+
+
     class debugger {
     public:
         debugger (std::string prog_name, pid_t pid)
@@ -64,6 +72,7 @@ namespace minidbg {
         void set_breakpoint_at_source_line(const std::string& file, unsigned line);
         void print_source(const std::string& file_name, unsigned line, unsigned n_lines_context=2);
         auto lookup_symbol(const std::string&) -> std::vector<symbol>;
+
 
     private:
         void single_step_instruction(); //single step without checking breakpoints
