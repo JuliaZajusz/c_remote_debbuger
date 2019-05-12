@@ -24,7 +24,8 @@
 	</style>
 	
 	<head>
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 	<!-- Latest compiled and minified CSS -->
 
@@ -51,15 +52,31 @@
 	<button id="registersButton" class="btn btn-primary btn-sm" onclick="showRegistersBtnClick()">show registers</button>
 	<span id="normaltext" class="label label-default col-3"> Write command:</span>
 	<input id="manualinput"> <button id="maninputButton" class="btn btn-primary btn-sm" onclick="manInputBtnClick()">submit</button>
-	<div id = wrapper style="height:200px; width:400px;">
-			<div id="editor">
-				//Load a file to see the contents
+  <div class ="row">
+		<div id = wrapper style="height:200px; width:400px;">
+				<div id="editor">
+					//Load a file to see the contents
+				</div>
+		</div>
+		<div id="variablesPanel" class="card" style="height:200px; width:400px;">
+				<div class="card-body"></div>
 			</div>
 	</div>
 	<div id="output" class="pre-scrollable" style="height:200px"> </div>
 	<script language="javascript" src="js/bootstrap.min.js"></script>
 
 	<script>
+
+	var breakpointAddresses = [];
+  var showVariablesFlag = false;
+	for(var i = 0; i < 1000; i++)
+	{
+		breakpointAddresses[i] = '';
+	}
+	var lastBreakpointLine = 0;
+	var previousMarker = 0;
+	const socket = io('http://localhost:1337');
+
 	var EditSession = require("ace/edit_session").EditSession;
 
 	var editor = ace.edit("editor");
@@ -76,33 +93,27 @@
 			if (!editor.isFocused()) 
 				return; 
 			if (e.clientX > 25 + target.getBoundingClientRect().left) 
+				return; 				
+			if (target.className.indexOf("breakpoint") != -1) 
+			{
+				var row = e.getDocumentPosition().row 
+				e.editor.session.clearBreakpoint(row) 
+				e.stop()
 				return; 
-
+			}
 			var row = e.getDocumentPosition().row 
 			e.editor.session.setBreakpoint(row) 
+			sendBreakpointRequest(row)
 			e.stop() 
 		}) 
 
 	function openBtnClick(val){
+
 		var programName = $('#programName').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/openProgram",
-			method: "POST",
-				data:{
-				filename:programName
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-		  $('#output').html('');
-		  readFile();
+		$('#output').html('');
+		socket.emit ('openProgram', programName);
+		readFile();
+
 	}
 	
 	function manInputBtnClick(val){
@@ -125,6 +136,27 @@
 		  });
 	}
 
+	function sendBreakpointRequest(debugLine)
+	{
+		debugLine++;
+		lastBreakpointLine = debugLine;
+		$.ajax({
+			url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
+			method: "POST",
+				data:{
+				line:debugLine
+			 },
+			 success: function(data, state){
+				 console.log(data);
+			 },
+			error: function(data, state){
+				console.log('failure');
+				console.log(data);
+				console.log(state);	  
+			}
+			});			
+
+	}
 
 	function setBreakpointBtnClick(val){
 		var debugLine = $('#debugLine').val();
@@ -168,6 +200,8 @@
 	
 	function continueBtnClick(val){
 	
+		 editor.session.removeMarker(previousMarker);
+
 		  $.ajax({
 			url: "http://localhost:1337/api/v1/posts/continueExecution",
 			method: "POST",
@@ -242,7 +276,8 @@ function finishBtnClick(val){
 				console.log(data);
 				console.log(state);	  
 			}
-		  });
+			});
+			showVariablesFlag = true;
 	}
 
 	function showRegistersBtnClick(val){
@@ -261,7 +296,7 @@ function finishBtnClick(val){
 			}
 		  });
 	}
-
+/*
 	function openBtnClick(val){
 		var programName = $('#programName').val();
 	
@@ -282,10 +317,10 @@ function finishBtnClick(val){
 		  });
 		  $('#output').html('');
 		  readFile();
-	}
+	}*/
 	
 	function checkOutputBtnClick(val){
-	
+	/*
 	
 		  $.ajax({
 			url: "http://localhost:1337/api/v1/posts/checkoutput",
@@ -294,8 +329,19 @@ function finishBtnClick(val){
 				 for(var i = 0; i< data.response.length; i++)
 				 {
 					var str = data.response[i];
+					if(str.indexOf('Set breakpoint at address') != -1)
+					{
+						assignBreakpointToLine(str);
+					}
+					if(str.indexOf('Hit breakpoint at address') != -1)
+					{
+						breakpointHit(str);
+					}
+					
 					var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
 					$('#output').append(breaks);
+					$("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
+
 					console.log(data);
 				}
 			 },
@@ -304,8 +350,31 @@ function finishBtnClick(val){
 				console.log(data);
 				console.log(state);	  
 			}
-		  });
+		  });*/
 	}
+
+	function assignBreakpointToLine(data)
+	{
+		breakpointAddresses[lastBreakpointLine] = data.slice(26,34);
+	}
+
+	function breakpointHit(data)
+	{
+		var address = data.slice(26,34);
+		var line = breakpointAddresses.indexOf(address);
+		if(line === -1) 
+ 		{
+        console.log(data.slice(34));     
+		}
+		
+		
+		var Range = ace.require('ace/range').Range;
+    previousMarker = editor.session.addMarker(new Range(line-1, 0, line-1, 1), "myMarker", "fullLine");
+
+		console.log('hit the line ' + line);
+	//	showVariablesBtnClick(null);
+	}
+
 
 	setInterval(checkOutputBtnClick, 100);
 	function readFile(val){
@@ -330,8 +399,37 @@ function finishBtnClick(val){
 		  });
 	}
 
-	
-	
+	function showVariables(msg)
+	{
+		var breaks = msg.replace(/\r\n|\r|\n/g,"<br>")
+		$("#variablesPanel").html(breaks);
+	}
+
+	socket.on ('serverMessage', function (msg) {
+		console.log (msg);
+		var str = msg
+					if(showVariablesFlag)
+					{
+						showVariables(msg);
+						showVariablesFlag = false;
+					}
+					if(str.indexOf('Set breakpoint at address') != -1)
+					{
+						assignBreakpointToLine(str);
+					}
+					if(str.indexOf('Hit breakpoint at address') != -1)
+					{
+						breakpointHit(str.slice(str.indexOf('Hit breakpoint at address')));
+					  
+					}
+					
+					var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
+					$('#output').append(breaks);
+					$("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
+
+				
+
+  });
 	</script>
 	
 	

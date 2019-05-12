@@ -7,31 +7,6 @@ const exec = require('child_process').exec;
 var outputArray = [];
 var programProcess;
 
-function openProgram(body){
-    
-    console.log(body);
-    programProcess = exec(`./../cpp/minidbg ./../cpp/` + body.filename);
-    
-    programProcess.stdout.on('data', function(data){
-
-        outputArray.push(data); 
-        console.log('im in the data function');
-        console.log(data);
-        
-    });
-
-    programProcess.stderr.on('data', function(data){
-        
-        outputArray.push(data); 
-        console.log('im in the err function');
-        console.log(data);
-        
-    });
-
-    return "program started";
-
-}
-
 function readSource(body)
 {
     
@@ -105,19 +80,13 @@ function showRegisters(body)
 
 }
 
-
-
-
-function checkOutput()
+function setProgramProcess(process)
 {
-    var result = outputArray;
-    outputArray = [];
-    return result;
+    programProcess = process;
 }
 
 module.exports = {   
-    openProgram,
-    checkOutput,
+    setProgramProcess,
     continueExecution,
     stepExecution,
     nextExecution,
