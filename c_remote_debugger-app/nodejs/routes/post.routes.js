@@ -92,4 +92,30 @@ router.post('/manualInput', function (req, res){
 //     res.json({response: result});
 // })
 
+//load file
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+    destination: "./public/uploads/",
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {fileSize: 1000000},
+}).single("uploadedFile");
+
+
+router.post("/postFile", (req, res) => {
+    upload(req,res,function(err) {
+        if(err) {
+            return res.end("Error uploading file.");
+        }
+        res.end(req.file && req.file.originalname);
+    });
+})
+
+
 module.exports = router
