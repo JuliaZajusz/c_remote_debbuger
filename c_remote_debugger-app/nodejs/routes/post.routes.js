@@ -12,12 +12,12 @@ router.post('/readSource', function (req, res){
 
 })
 
-router.post('/openProgram', function (req, res){
-
-    var result = post.openProgram(req.body);
-    res.json({response: result});
-
-})
+// router.post('/openProgram', function (req, res){
+//
+//     var result = post.openProgram(req.body);
+//     res.json({response: result});
+//
+// })
 
 router.post('/setLineBreakpoint', function (req, res){
 
@@ -51,6 +51,13 @@ router.post('/stepExecution', function (req, res){
 router.post('/nextExecution', function (req, res){
 
     var result = post.nextExecution(req.body);
+    res.json({response: result});
+
+})
+
+router.post('/stepOutExecution', function (req, res){
+
+    var result = post.stepOutExecution(req.body);
     res.json({response: result});
 
 })

@@ -31,35 +31,47 @@ app.get('/', (req, res) => {
 // Starting server
 var server = app.listen('1337')
 const io = require('socket.io')(server);
- 
+
+const util = require('util');
+const execPromisify = util.promisify(require('child_process').exec);
+
+async function compileFile(fileName, executeFileName) {
+    const { stdout, stderr } = await execPromisify(`gcc -g ./public/uploads/${fileName} -o ./public/uploads/${executeFileName} -lstdc++`);
+    console.log('stdout:', stdout);
+    if(stderr) {
+        console.log('stderr:', stderr);
+    }
+}
 
 io.on('connection', function(socket) {
 
-  socket.on('openProgram', function(data) {
-    console.log('openprogram received');
-    programProcess = exec(`./../cpp/minidbg ./../cpp/` + data);
-    post.setProgramProcess(programProcess);
+  socket.on('openProgram', async function (data) {
+      console.log('openprogram received');
+      var executeFileName = data.split('.').slice(0, -1).join('.');
+      await compileFile(data, executeFileName);
+      programProcess = exec(`./../cpp/minidbg ./public/uploads/${executeFileName}`);
+      post.setProgramProcess(programProcess);
 
-    programProcess.stdout.on('data', function(data){
-
-
-        io.emit('serverMessage', data);
-        console.log('im in the data function');
-        console.log(data);
-
-    });
-
-    programProcess.stderr.on('data', function(data){
+      programProcess.stdout.on('data', function (data) {
 
 
-        io.emit('serverMessage', data);
-        console.log('im in the err function');
-        console.log(data);
+          io.emit('serverMessage', data);
+          console.log('im in the data function');
+          console.log(data);
 
-    });
-  console.log('assigned');
+      });
 
-	});
+      programProcess.stderr.on('data', function (data) {
+
+
+          io.emit('serverMessage', data);
+          console.log('im in the err function');
+          console.log(data);
+
+      });
+      console.log('assigned');
+
+  });
 });
 
 // app.get("/", express.static(path.join(__dirname, "./public")));

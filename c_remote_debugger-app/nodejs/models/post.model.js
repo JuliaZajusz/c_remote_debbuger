@@ -3,14 +3,15 @@ const filename = './data/posts.json'
 const helper = require('../helpers/helper.js')
 const shell = require('shelljs')
 var fs = require('fs');
-const exec = require('child_process').exec;
+// const exec = require('child_process').exec;
 var outputArray = [];
 var programProcess;
 
+
 function readSource(body)
 {
-    
-    var contents = fs.readFileSync('./../cpp/examples/' +body.filename+'.cpp', 'utf8');
+console.log("body", body)
+    var contents = fs.readFileSync('./public/uploads/' +body.filename, 'utf8');
     return contents;
 }
 
@@ -59,6 +60,13 @@ function nextExecution(body)
 
 }
 
+function stepOutExecution(body)
+{
+    programProcess.stdin.write('stepOut \n');
+    return 'finish request complete';
+
+}
+
 function finishExecution(body)
 {
     programProcess.stdin.write('finish \n');
@@ -85,7 +93,8 @@ function setProgramProcess(process)
     programProcess = process;
 }
 
-module.exports = {   
+module.exports = {
+    stepOutExecution,
     setProgramProcess,
     continueExecution,
     stepExecution,

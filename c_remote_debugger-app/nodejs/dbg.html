@@ -84,12 +84,6 @@
         </form>
 
 
-
-        <div class="row mb-3">
-            <span id="normaltext" class="label label-default col-3"> <Program>  </Program>name:</span>
-    <div class="d-flex col-6"> <input id="programName" style="width: 100%"/> </div>
-            <button id="openBtn" class="btn btn-primary btn-sm cst-button" onclick="openBtnClick()"> open</button>
-        </div>
         <div class = "row mb-3" >
             <span id = "normaltext" class= "label label-default col-3" > Set breakpoint at line:</span>
             <div class="d-flex col-6"> <input id = "debugLine" style="width: 100%"/> </div>
@@ -108,17 +102,16 @@
     </div>
 
     <div class = "row" >
-        <button id = "continueButton" class= "btn btn-primary btn-sm col-2" onclick = "continueBtnClick()" >continue </button>
-    <button id = "stepButton" class= "btn btn-primary btn-sm col-2" onclick = "stepBtnClick()" > step in </button>
-    <button id = "nextButton"class= "btn btn-primary btn-sm col-2" onclick = "nextBtnClick()" > step
-    over
-    </button>
-    <button id="finishButton" class="btn btn-primary btn-sm col-2" onclick="finishBtnClick()">step out</button>
-    <button class = "btn btn-primary btn-sm col-2" onclick = "showVariablesBtnClick()" > show variables  </button>
-    <button id="registersButton" class="btn btn-primary btn-sm col-2"
-            onclick="showRegistersBtnClick()">show
-        registers
-    </button>
+        <button id = "continueButton" class= "btn btn-primary btn-sm col-1" onclick = "continueBtnClick()" >continue </button>
+    <button id = "stepButton" class= "btn btn-primary btn-sm col-1" onclick = "stepBtnClick()" > step in </button>
+    <button id = "nextButton"class= "btn btn-primary btn-sm col-1" onclick = "nextBtnClick()" > step over</button>
+    <button id="stepOutButton" class="btn btn-primary btn-sm col-1" onclick="stepOutBtnClick()">step out</button>
+    <button class = "btn btn-primary btn-sm col-1" onclick = "showVariablesBtnClick()" > show variables  </button>
+    <button id="registersButton" class="btn btn-primary btn-sm col-1"
+            onclick="showRegistersBtnClick()">show registers</button>
+        <button id="finishButton" class="btn btn-primary btn-sm col-1"
+                onClick="finishBtnClick()">finish</button>
+
     </div>
     </div>
 
@@ -198,6 +191,9 @@
                     success: function(response) {
                         $("#status").empty().text(response);
                         console.log(response);
+                        $('#output').html('');
+                        socket.emit('openProgram', response);
+                         readFile(response);
                     }
                 });
                 //Very important line, it disable the page refresh.
@@ -209,14 +205,6 @@
         $("#status").empty().text($( "input#fileUpload" ).val().match(/[^\\/]*$/)[0]);
     });
 
-        function openBtnClick(val) {
-
-            var programName = $('#programName').val();
-            $('#output').html('');
-            socket.emit('openProgram', programName);
-            readFile();
-
-        }
 
         function manInputBtnClick(val) {
             var maninput = $('#manualinput').val();
@@ -349,6 +337,21 @@
             });
         }
 
+    function stepOutBtnClick(val) {
+        $.ajax({
+            url: "http://localhost:1337/api/v1/posts/stepOutExecution",
+            method: "POST",
+            success: function (data, state) {
+                console.log(data);
+            },
+            error: function (data, state) {
+                console.log('failure');
+                console.log(data);
+                console.log(state);
+            }
+        });
+    }
+
         function finishBtnClick(val) {
 
             $.ajax({
@@ -398,61 +401,9 @@
             });
         }
 
-        /*
-            function openBtnClick(val){
-                var programName = $('#programName').val();
-
-                  $.ajax({
-                    url: "http://localhost:1337/api/v1/posts/openProgram",
-                    method: "POST",
-                        data:{
-                        filename:programName
-                     },
-                     success: function(data, state){
-                         console.log(data);
-                     },
-                    error: function(data, state){
-                        console.log('failure');
-                        console.log(data);
-                        console.log(state);
-                    }
-                  });
-                  $('#output').html('');
-                  readFile();
-            }*/
 
         function checkOutputBtnClick(val) {
-            /*
 
-                  $.ajax({
-                    url: "http://localhost:1337/api/v1/posts/checkoutput",
-                    method: "POST",
-                     success: function(data, state){
-                         for(var i = 0; i< data.response.length; i++)
-                         {
-                            var str = data.response[i];
-                            if(str.indexOf('Set breakpoint at address') != -1)
-                            {
-                                assignBreakpointToLine(str);
-                            }
-                            if(str.indexOf('Hit breakpoint at address') != -1)
-                            {
-                                breakpointHit(str);
-                            }
-
-                            var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
-                            $('#output').append(breaks);
-                            $("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
-
-                            console.log(data);
-                        }
-                     },
-                    error: function(data, state){
-                        console.log('failure');
-                        console.log(data);
-                        console.log(state);
-                    }
-                  });*/
         }
 
         function assignBreakpointToLine(data) {
@@ -477,9 +428,9 @@
 
         setInterval(checkOutputBtnClick, 100);
 
-        function readFile(val) {
-            var programName = $('#programName').val();
+        function readFile(programName) {
 
+            console.log("programName", programName);
             $.ajax({
                 url: "http://localhost:1337/api/v1/posts/readSource",
                 method: "POST",

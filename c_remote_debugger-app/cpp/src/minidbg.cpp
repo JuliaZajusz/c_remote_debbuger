@@ -407,8 +407,10 @@ void debugger::handle_command(const std::string& line) {
         step_in();
     } else if (is_prefix(command, "next")) {
         step_over();
-    } else if (is_prefix(command, "finish")) {
+    } else if (is_prefix(command, "stepOut")) {
         step_out();
+    } else if (is_prefix(command, "finish")) {
+        exit(0);
     } else if (is_prefix(command, "register")) {
         if (is_prefix(args[1], "dump")) {
             dump_registers();
