@@ -51,172 +51,68 @@
             crossorigin="anonymous"></script>
     </script>
     </head>
-    <
-    div
-    class
-    = "main-container" >
-        < div >
-        < div
-    class
-    = "d-flex justify-content-center" >
-        < h1
-    class
-    = "mb-3" > Remote
-    debugger
-    </h1>
-    <
-    /div>
+    <div class="main-container" >
+        <div>
+        <div class="d-flex justify-content-center" >
+        <h1 class = "mb-3" > Remote debugger</h1>
+    </div>
     <div class="row mb-3">
     <span id="normaltext" class="label label-default col-3"> Program
     name:</span>
         <input id="programName"/>
         <button id="openBtn" class="btn btn-primary btn-sm cst-button" onclick="openBtnClick()"> open</button>
     </div>
-    < div
-    class
-    = "row mb-3" >
-        < span
-    id = "normaltext"
-    class
-    = "label label-default col-3" > Set
-    breakpoint
-    at
-    line:</
-    span>
-    <
-    input
-    id = "debugLine" / >
-        < button
-    id = "setBreakpointButton"
-    class
-    = "btn btn-primary btn-sm cst-button"
-    onclick = "setBreakpointBtnClick()" > set < /button>
+    <div class = "row mb-3" >
+        <span id = "normaltext" class= "label label-default col-3" > Set breakpoint at line:</span>
+    <input id = "debugLine" />
+        <button id = "setBreakpointButton" class="btn btn-primary btn-sm cst-button" onclick = "setBreakpointBtnClick()" > set </button>
     </div>
-    <
-    div
-    class
-    = "row mb-3" >
-        < span
-    id = "normaltext"
-    class
-    = "label label-default col-3" > Set
-    breakpoint
-    at
-    addres:</
-    span>
-    <
-    input
-    id = "debugAddres" / >
-        < button
-    id = "setBreakpointAddresButton"
-    class
-    = "btn btn-primary btn-sm cst-button"
-    onclick = "setBreakpointAddresBtnClick()" > set
-        < /button>
+    <div class = "row mb-3">
+        <span id = "normaltext" class= "label label-default col-3" > Set breakpoint at addres:</span>
+    <input id = "debugAddres" />
+        <button id = "setBreakpointAddresButton" class= "btn btn-primary btn-sm cst-button" onclick = "setBreakpointAddresBtnClick()" > set </button>
     </div>
 
-    <
-    div
-    class
-    = "row mb-3" >
-        < span
-    id = "normaltext"
-    class
-    = "label label-default col-3" > Write
-    command:</
-    span>
-    <
-    input
-    id = "manualinput" / >
-        < button
-    id = "maninputButton"
-    class
-    = "btn btn-primary btn-sm cst-button"
-    onclick = "manInputBtnClick()" > submit < /button>
+    <div class= "row mb-3" >
+        <span id = "normaltext" class = "label label-default col-3" > Write command:</span>
+    <input id = "manualinput" />
+        <button id = "maninputButton" class= "btn btn-primary btn-sm cst-button"onclick = "manInputBtnClick()" > submit </button>
     </div>
 
-    <
-    div
-    class
-    = "row" >
-        < button
-    id = "continueButton"
-    class
-    = "btn btn-primary btn-sm col-2"
-    onclick = "continueBtnClick()" >
-    continue
-    </button>
-    <
-    button
-    id = "stepButton"
-    class
-    = "btn btn-primary btn-sm col-2"
-    onclick = "stepBtnClick()" > step in
-    </button>
-    <
-    button
-    id = "nextButton"
-    class
-    = "btn btn-primary btn-sm col-2"
-    onclick = "nextBtnClick()" > step
+    <div class = "row" >
+        <button id = "continueButton" class= "btn btn-primary btn-sm col-2" onclick = "continueBtnClick()" >continue </button>
+    <button id = "stepButton" class= "btn btn-primary btn-sm col-2" onclick = "stepBtnClick()" > step in </button>
+    <button id = "nextButton"class= "btn btn-primary btn-sm col-2" onclick = "nextBtnClick()" > step
     over
-    < /button>
-    <button id="finishButton" class="btn btn-primary btn-sm col-2" onclick="finishBtnClick()">step
-        out
     </button>
-    < button
-    class
-    = "btn btn-primary btn-sm col-2"
-    onclick = "showVariablesBtnClick()" > show
-    variables
-    < /button>
+    <button id="finishButton" class="btn btn-primary btn-sm col-2" onclick="finishBtnClick()">step out</button>
+    <button class = "btn btn-primary btn-sm col-2" onclick = "showVariablesBtnClick()" > show variables  </button>
     <button id="registersButton" class="btn btn-primary btn-sm col-2"
             onclick="showRegistersBtnClick()">show
         registers
     </button>
-    < /div>
+    </div>
     </div>
 
-    <
-    div
-    class
-    = "d-flex flex-column w-100"
-    style = "flex:1; min-height: 200px" >
-        < div
-    class
-    = "row"
-    style = "height: 200px" >
-        < div
-    id = wrapper
-    class
-    = "col-6"
-    style = "height:100%; padding:0" >
-        < div
-    id = "editor" >
+    <div class= "d-flex flex-column w-100" style = "flex:1; min-height: 200px" >
+        <div class= "row" style = "height: 200px" >
+        <div id = wrapper class= "col-6" style = "height:100%; padding:0" >
+        <div id = "editor" >
         //Load a file to see the content
-        < /div>
+        </div>
     </div>
-    <
-    div
-    id = "variablesPanel"
-    class
-    = "card col-6"
-    style = "height:100%;" >
-        < div
-    class
-    = "card-body" > < /div>
+    <div id = "variablesPanel" class = "card col-6" style = "height:100%;" >
+        <div class= "card-body"> </div>
     </div>
-    <
-    /div>
+    </div>
 
-    <div id="output" class="pre-scrollable"
-         style="flex:1; flex-grow:1; min-height:100px; margin-right: -15px; margin-left: -15px"></div>
-    < /div>
+    <div id="output" class="pre-scrollable" style="flex:1; flex-grow:1; min-height:100px; margin-right: -15px; margin-left: -15px">
+    </div>
+    </div>
     </div>
 
 
-    <
-    script
+    <script
     language = "javascript"
     src = "js/bootstrap.min.js" ></script>
 
