@@ -85,13 +85,11 @@ router.post('/manualInput', function (req, res){
 })
 
 
-
-
-router.post('/checkoutput', function(req, res){
-
-    var result = post.checkOutput(req.body);
-
-    res.json({response: result});
-})
+// router.post('/checkoutput', function(req, res){
+//
+//     var result = post.checkOutput(req.body);
+//
+//     res.json({response: result});
+// })
 
 module.exports = router

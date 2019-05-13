@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="css/bootstrap.css"/>
+<link rel="stylesheet" href="bootstrap.css"/>
 
 <style>
 
@@ -6,431 +6,577 @@
         width: 100%;
         height: 100%;
     }
-	.somethingRed
-	{
-		color:Blue
-	}
-	.myMarker {
- 	 position:absolute;
- 	 background:rgba(100,200,100,0.5);
- 	 z-index:20
-	}
 
-	.ace_gutter-cell.ace_breakpoint{ 
-   	 border-radius: 20px 0px 0px 20px; 
-   	 box-shadow: 0px 0px 1px 1px red inset; 
-	} 
+    .somethingRed {
+        color: Blue
+    }
 
-	</style>
-	
-	<head>
-	<script src="/socket.io/socket.io.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
-	<!-- Latest compiled and minified CSS -->
+    .myMarker {
+        position: absolute;
+        background: rgba(100, 200, 100, 0.5);
+        z-index: 20
+    }
 
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
-	</script>
-	</head>
-		<h1>Remote debugger</h1>
-		  </div>
-		  
-	<span id="normaltext" class="label label-default col-3"> Program name:</span>
-	<input id="programName"> <button id="openBtn" class="btn btn-primary btn-sm" onclick="openBtnClick()">open</button>
-	<BR>
-	<span id="normaltext" class="label label-default col-3"> Set breakpoint at line:</span>
-	<input id="debugLine"> <button id="setBreakpointButton" class="btn btn-primary btn-sm" onclick="setBreakpointBtnClick()">set</button>
-	<span id="normaltext" class="label label-default col-3"> Set breakpoint at addres:</span>
-	<input id="debugAddres"> <button id="setBreakpointAddresButton" class="btn btn-primary btn-sm" onclick="setBreakpointAddresBtnClick()">set</button>
-	<br>
-	<button id="continueButton" class="btn btn-primary btn-sm" onclick="continueBtnClick()">continue</button>
-	<button id="stepButton" class="btn btn-primary btn-sm" onclick="stepBtnClick()">step in</button>
-	<button id="nextButton" class="btn btn-primary btn-sm" onclick="nextBtnClick()">step over</button>
-	<button id="finishButton" class="btn btn-primary btn-sm" onclick="finishBtnClick()">step out</button>
-	<button class="btn btn-primary btn-sm" onclick="showVariablesBtnClick()">show variables</button>
-	<button id="registersButton" class="btn btn-primary btn-sm" onclick="showRegistersBtnClick()">show registers</button>
-	<span id="normaltext" class="label label-default col-3"> Write command:</span>
-	<input id="manualinput"> <button id="maninputButton" class="btn btn-primary btn-sm" onclick="manInputBtnClick()">submit</button>
-  <div class ="row">
-		<div id = wrapper style="height:200px; width:400px;">
-				<div id="editor">
-					//Load a file to see the contents
-				</div>
-		</div>
-		<div id="variablesPanel" class="card" style="height:200px; width:400px;">
-				<div class="card-body"></div>
-			</div>
-	</div>
-	<div id="output" class="pre-scrollable" style="height:200px"> </div>
-	<script language="javascript" src="js/bootstrap.min.js"></script>
+    .ace_gutter-cell.ace_breakpoint {
+        border-radius: 20px 0px 0px 20px;
+        box-shadow: 0px 0px 1px 1px red inset;
+    }
 
-	<script>
+    .main-container {
+        padding: 15px;
+        padding-bottom: 0;
+        height: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-	var breakpointAddresses = [];
-  var showVariablesFlag = false;
-	for(var i = 0; i < 1000; i++)
-	{
-		breakpointAddresses[i] = '';
-	}
-	var lastBreakpointLine = 0;
-	var previousMarker = 0;
-	const socket = io('http://localhost:1337');
+    .cst-button {
+        width: 60px;
+        margin-left: 10px;
+    }
 
-	var EditSession = require("ace/edit_session").EditSession;
+</style>
 
-	var editor = ace.edit("editor");
-		editor.setTheme("ace/theme/dracula");
-		editor.setReadOnly(true);
-		editor.setShowPrintMargin(false);
-		var Range = ace.require('ace/range').Range;
-		editor.session.addMarker(new Range(3, 0, 4, 1), "myMarker", "fullLine");
-	   
-		editor.on("guttermousedown", function(e){ 
-			var target = e.domEvent.target; 
-			if (target.className.indexOf("ace_gutter-cell") == -1) 
-				return; 
-			if (!editor.isFocused()) 
-				return; 
-			if (e.clientX > 25 + target.getBoundingClientRect().left) 
-				return; 				
-			if (target.className.indexOf("breakpoint") != -1) 
-			{
-				var row = e.getDocumentPosition().row 
-				e.editor.session.clearBreakpoint(row) 
-				e.stop()
-				return; 
-			}
-			var row = e.getDocumentPosition().row 
-			e.editor.session.setBreakpoint(row) 
-			sendBreakpointRequest(row)
-			e.stop() 
-		}) 
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript"
+            charset="utf-8"></script>
+    <!-- Latest compiled and minified CSS -->
 
-	function openBtnClick(val){
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+            crossorigin="anonymous"></script>
+    </script>
+    </head>
+    <
+    div
+    class
+    = "main-container" >
+        < div >
+        < div
+    class
+    = "d-flex justify-content-center" >
+        < h1
+    class
+    = "mb-3" > Remote
+    debugger
+    </h1>
+    <
+    /div>
+    <div class="row mb-3">
+    <span id="normaltext" class="label label-default col-3"> Program
+    name:</span>
+        <input id="programName"/>
+        <button id="openBtn" class="btn btn-primary btn-sm cst-button" onclick="openBtnClick()"> open</button>
+    </div>
+    < div
+    class
+    = "row mb-3" >
+        < span
+    id = "normaltext"
+    class
+    = "label label-default col-3" > Set
+    breakpoint
+    at
+    line:</
+    span>
+    <
+    input
+    id = "debugLine" / >
+        < button
+    id = "setBreakpointButton"
+    class
+    = "btn btn-primary btn-sm cst-button"
+    onclick = "setBreakpointBtnClick()" > set < /button>
+    </div>
+    <
+    div
+    class
+    = "row mb-3" >
+        < span
+    id = "normaltext"
+    class
+    = "label label-default col-3" > Set
+    breakpoint
+    at
+    addres:</
+    span>
+    <
+    input
+    id = "debugAddres" / >
+        < button
+    id = "setBreakpointAddresButton"
+    class
+    = "btn btn-primary btn-sm cst-button"
+    onclick = "setBreakpointAddresBtnClick()" > set
+        < /button>
+    </div>
 
-		var programName = $('#programName').val();
-		$('#output').html('');
-		socket.emit ('openProgram', programName);
-		readFile();
+    <
+    div
+    class
+    = "row mb-3" >
+        < span
+    id = "normaltext"
+    class
+    = "label label-default col-3" > Write
+    command:</
+    span>
+    <
+    input
+    id = "manualinput" / >
+        < button
+    id = "maninputButton"
+    class
+    = "btn btn-primary btn-sm cst-button"
+    onclick = "manInputBtnClick()" > submit < /button>
+    </div>
 
-	}
-	
-	function manInputBtnClick(val){
-		var maninput = $('#manualinput').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/manualInput",
-			method: "POST",
-				data:{
-				maninput:maninput
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
+    <
+    div
+    class
+    = "row" >
+        < button
+    id = "continueButton"
+    class
+    = "btn btn-primary btn-sm col-2"
+    onclick = "continueBtnClick()" >
+    continue
+    </button>
+    <
+    button
+    id = "stepButton"
+    class
+    = "btn btn-primary btn-sm col-2"
+    onclick = "stepBtnClick()" > step in
+    </button>
+    <
+    button
+    id = "nextButton"
+    class
+    = "btn btn-primary btn-sm col-2"
+    onclick = "nextBtnClick()" > step
+    over
+    < /button>
+    <button id="finishButton" class="btn btn-primary btn-sm col-2" onclick="finishBtnClick()">step
+        out
+    </button>
+    < button
+    class
+    = "btn btn-primary btn-sm col-2"
+    onclick = "showVariablesBtnClick()" > show
+    variables
+    < /button>
+    <button id="registersButton" class="btn btn-primary btn-sm col-2"
+            onclick="showRegistersBtnClick()">show
+        registers
+    </button>
+    < /div>
+    </div>
 
-	function sendBreakpointRequest(debugLine)
-	{
-		debugLine++;
-		lastBreakpointLine = debugLine;
-		$.ajax({
-			url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
-			method: "POST",
-				data:{
-				line:debugLine
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-			});			
+    <
+    div
+    class
+    = "d-flex flex-column w-100"
+    style = "flex:1; min-height: 200px" >
+        < div
+    class
+    = "row"
+    style = "height: 200px" >
+        < div
+    id = wrapper
+    class
+    = "col-6"
+    style = "height:100%; padding:0" >
+        < div
+    id = "editor" >
+        //Load a file to see the content
+        < /div>
+    </div>
+    <
+    div
+    id = "variablesPanel"
+    class
+    = "card col-6"
+    style = "height:100%;" >
+        < div
+    class
+    = "card-body" > < /div>
+    </div>
+    <
+    /div>
 
-	}
-
-	function setBreakpointBtnClick(val){
-		var debugLine = $('#debugLine').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
-			method: "POST",
-				data:{
-				line:debugLine
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
-
-	function setBreakpointAddresBtnClick(val){
-		var debugAddres = $('#debugAddres').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/setAddresBreakpoint",
-			method: "POST",
-				data:{
-				addres:debugAddres
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
-	
-	function continueBtnClick(val){
-	
-		 editor.session.removeMarker(previousMarker);
-
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/continueExecution",
-			method: "POST",
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
-
-	function stepBtnClick(val){
-	
-	$.ajax({
-	url: "http://localhost:1337/api/v1/posts/stepExecution",
-	method: "POST",
-	 success: function(data, state){
-		 console.log(data);
-	 },
-	error: function(data, state){
-		console.log('failure');
-		console.log(data);
-		console.log(state);	  
-	}
-	});
-}
-
-function nextBtnClick(val){
-	
-	$.ajax({
-	url: "http://localhost:1337/api/v1/posts/nextExecution",
-	method: "POST",
-	 success: function(data, state){
-		 console.log(data);
-	 },
-	error: function(data, state){
-		console.log('failure');
-		console.log(data);
-		console.log(state);	  
-	}
-	});
-}
-
-function finishBtnClick(val){
-	
-	$.ajax({
-	url: "http://localhost:1337/api/v1/posts/finishExecution",
-	method: "POST",
-	 success: function(data, state){
-		 console.log(data);
-	 },
-	error: function(data, state){
-		console.log('failure');
-		console.log(data);
-		console.log(state);	  
-	}
-	});
-}
-	
-	function showVariablesBtnClick(val){
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/showVariables",
-			method: "POST",
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-			});
-			showVariablesFlag = true;
-	}
-
-	function showRegistersBtnClick(val){
-		var programName = $('#programName').val();
-	
-		  $.ajax({
-				url: "http://localhost:1337/api/v1/posts/showRegisters",
-			method: "POST",
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
-/*
-	function openBtnClick(val){
-		var programName = $('#programName').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/openProgram",
-			method: "POST",
-				data:{
-				filename:programName
-			 },
-			 success: function(data, state){
-				 console.log(data);
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-		  $('#output').html('');
-		  readFile();
-	}*/
-	
-	function checkOutputBtnClick(val){
-	/*
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/checkoutput",
-			method: "POST",
-			 success: function(data, state){
-				 for(var i = 0; i< data.response.length; i++)
-				 {
-					var str = data.response[i];
-					if(str.indexOf('Set breakpoint at address') != -1)
-					{
-						assignBreakpointToLine(str);
-					}
-					if(str.indexOf('Hit breakpoint at address') != -1)
-					{
-						breakpointHit(str);
-					}
-					
-					var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
-					$('#output').append(breaks);
-					$("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
-
-					console.log(data);
-				}
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });*/
-	}
-
-	function assignBreakpointToLine(data)
-	{
-		breakpointAddresses[lastBreakpointLine] = data.slice(26,34);
-	}
-
-	function breakpointHit(data)
-	{
-		var address = data.slice(26,34);
-		var line = breakpointAddresses.indexOf(address);
-		if(line === -1) 
- 		{
-        console.log(data.slice(34));     
-		}
-		
-		
-		var Range = ace.require('ace/range').Range;
-    previousMarker = editor.session.addMarker(new Range(line-1, 0, line-1, 1), "myMarker", "fullLine");
-
-		console.log('hit the line ' + line);
-	//	showVariablesBtnClick(null);
-	}
+    <div id="output" class="pre-scrollable"
+         style="flex:1; flex-grow:1; min-height:100px; margin-right: -15px; margin-left: -15px"></div>
+    < /div>
+    </div>
 
 
-	setInterval(checkOutputBtnClick, 100);
-	function readFile(val){
-		var programName = $('#programName').val();
-	
-		  $.ajax({
-			url: "http://localhost:1337/api/v1/posts/readSource",
-			method: "POST",
-				data:{
-				filename:programName
-			 },
-			 success: function(data, state){
-				 console.log(data);
-				 editor.setSession(new EditSession(data.response));
+    <
+    script
+    language = "javascript"
+    src = "js/bootstrap.min.js" ></script>
 
-			 },
-			error: function(data, state){
-				console.log('failure');
-				console.log(data);
-				console.log(state);	  
-			}
-		  });
-	}
+    <script>
 
-	function showVariables(msg)
-	{
-		var breaks = msg.replace(/\r\n|\r|\n/g,"<br>")
-		$("#variablesPanel").html(breaks);
-	}
+        var breakpointAddresses = [];
+        var showVariablesFlag = false;
+        for (var i = 0; i < 1000; i++) {
+            breakpointAddresses[i] = '';
+        }
+        var lastBreakpointLine = 0;
+        var previousMarker = 0;
+        const socket = io('http://localhost:1337');
 
-	socket.on ('serverMessage', function (msg) {
-		console.log (msg);
-		var str = msg
-					if(showVariablesFlag)
-					{
-						showVariables(msg);
-						showVariablesFlag = false;
-					}
-					if(str.indexOf('Set breakpoint at address') != -1)
-					{
-						assignBreakpointToLine(str);
-					}
-					if(str.indexOf('Hit breakpoint at address') != -1)
-					{
-						breakpointHit(str.slice(str.indexOf('Hit breakpoint at address')));
-					  
-					}
-					
-					var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
-					$('#output').append(breaks);
-					$("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
+        var EditSession = require("ace/edit_session").EditSession;
 
-				
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/dracula");
+        editor.setReadOnly(true);
+        editor.setShowPrintMargin(false);
+        var Range = ace.require('ace/range').Range;
+        editor.session.addMarker(new Range(3, 0, 4, 1), "myMarker", "fullLine");
 
-  });
-	</script>
+        editor.on("guttermousedown", function (e) {
+            var target = e.domEvent.target;
+            if (target.className.indexOf("ace_gutter-cell") == -1)
+                return;
+            if (!editor.isFocused())
+                return;
+            if (e.clientX > 25 + target.getBoundingClientRect().left)
+                return;
+            if (target.className.indexOf("breakpoint") != -1) {
+                var row = e.getDocumentPosition().row
+                e.editor.session.clearBreakpoint(row)
+                e.stop()
+                return;
+            }
+            var row = e.getDocumentPosition().row
+            e.editor.session.setBreakpoint(row)
+            sendBreakpointRequest(row)
+            e.stop()
+        })
+
+        function openBtnClick(val) {
+
+            var programName = $('#programName').val();
+            $('#output').html('');
+            socket.emit('openProgram', programName);
+            readFile();
+
+        }
+
+        function manInputBtnClick(val) {
+            var maninput = $('#manualinput').val();
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/manualInput",
+                method: "POST",
+                data: {
+                    maninput: maninput
+                },
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function sendBreakpointRequest(debugLine) {
+            debugLine++;
+            lastBreakpointLine = debugLine;
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
+                method: "POST",
+                data: {
+                    line: debugLine
+                },
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+
+        }
+
+        function setBreakpointBtnClick(val) {
+            var debugLine = $('#debugLine').val();
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/setLineBreakpoint",
+                method: "POST",
+                data: {
+                    line: debugLine
+                },
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function setBreakpointAddresBtnClick(val) {
+            var debugAddres = $('#debugAddres').val();
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/setAddresBreakpoint",
+                method: "POST",
+                data: {
+                    addres: debugAddres
+                },
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function continueBtnClick(val) {
+
+            editor.session.removeMarker(previousMarker);
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/continueExecution",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function stepBtnClick(val) {
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/stepExecution",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function nextBtnClick(val) {
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/nextExecution",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function finishBtnClick(val) {
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/finishExecution",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function showVariablesBtnClick(val) {
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/showVariables",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+            showVariablesFlag = true;
+        }
+
+        function showRegistersBtnClick(val) {
+            var programName = $('#programName').val();
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/showRegisters",
+                method: "POST",
+                success: function (data, state) {
+                    console.log(data);
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        /*
+            function openBtnClick(val){
+                var programName = $('#programName').val();
+
+                  $.ajax({
+                    url: "http://localhost:1337/api/v1/posts/openProgram",
+                    method: "POST",
+                        data:{
+                        filename:programName
+                     },
+                     success: function(data, state){
+                         console.log(data);
+                     },
+                    error: function(data, state){
+                        console.log('failure');
+                        console.log(data);
+                        console.log(state);
+                    }
+                  });
+                  $('#output').html('');
+                  readFile();
+            }*/
+
+        function checkOutputBtnClick(val) {
+            /*
+
+                  $.ajax({
+                    url: "http://localhost:1337/api/v1/posts/checkoutput",
+                    method: "POST",
+                     success: function(data, state){
+                         for(var i = 0; i< data.response.length; i++)
+                         {
+                            var str = data.response[i];
+                            if(str.indexOf('Set breakpoint at address') != -1)
+                            {
+                                assignBreakpointToLine(str);
+                            }
+                            if(str.indexOf('Hit breakpoint at address') != -1)
+                            {
+                                breakpointHit(str);
+                            }
+
+                            var breaks = str.replace(/\r\n|\r|\n/g,"<br>")
+                            $('#output').append(breaks);
+                            $("#output").animate({ scrollTop: $('#output').prop("scrollHeight")}, 1000);
+
+                            console.log(data);
+                        }
+                     },
+                    error: function(data, state){
+                        console.log('failure');
+                        console.log(data);
+                        console.log(state);
+                    }
+                  });*/
+        }
+
+        function assignBreakpointToLine(data) {
+            breakpointAddresses[lastBreakpointLine] = data.slice(26, 34);
+        }
+
+        function breakpointHit(data) {
+            var address = data.slice(26, 34);
+            var line = breakpointAddresses.indexOf(address);
+            if (line === -1) {
+                console.log(data.slice(34));
+            }
+
+
+            var Range = ace.require('ace/range').Range;
+            previousMarker = editor.session.addMarker(new Range(line - 1, 0, line - 1, 1), "myMarker", "fullLine");
+
+            console.log('hit the line ' + line);
+            //	showVariablesBtnClick(null);
+        }
+
+
+        setInterval(checkOutputBtnClick, 100);
+
+        function readFile(val) {
+            var programName = $('#programName').val();
+
+            $.ajax({
+                url: "http://localhost:1337/api/v1/posts/readSource",
+                method: "POST",
+                data: {
+                    filename: programName
+                },
+                success: function (data, state) {
+                    console.log(data);
+                    editor.setSession(new EditSession(data.response));
+
+                },
+                error: function (data, state) {
+                    console.log('failure');
+                    console.log(data);
+                    console.log(state);
+                }
+            });
+        }
+
+        function showVariables(msg) {
+            var breaks = msg.replace(/\r\n|\r|\n/g, "<br>")
+            $("#variablesPanel").html(breaks);
+        }
+
+        socket.on('serverMessage', function (msg) {
+            console.log(msg);
+            var str = msg
+            if (showVariablesFlag) {
+                showVariables(msg);
+                showVariablesFlag = false;
+            }
+            if (str.indexOf('Set breakpoint at address') != -1) {
+                assignBreakpointToLine(str);
+            }
+            if (str.indexOf('Hit breakpoint at address') != -1) {
+                breakpointHit(str.slice(str.indexOf('Hit breakpoint at address')));
+
+            }
+
+            var breaks = str.replace(/\r\n|\r|\n/g, "<br>")
+            $('#output').append(breaks);
+            $("#output").animate({scrollTop: $('#output').prop("scrollHeight")}, 1000);
+
+
+        });
+    </script>
 	
 	
 	
