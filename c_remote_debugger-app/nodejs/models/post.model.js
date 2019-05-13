@@ -2,92 +2,99 @@ let posts = require('../data/posts.json')
 const filename = './data/posts.json'
 const helper = require('../helpers/helper.js')
 const shell = require('shelljs')
+var fs = require('fs');
+const exec = require('child_process').exec;
+var outputArray = [];
+var programProcess;
 
-
-function run(body) {
-    return new Promise((resolve, reject) => {
-        if (posts.length === 0) {
-            reject({
-                message: 'no posts available',
-                status: 202
-            })
-        }
-        const {filename} = body
-        var script_response = shell.exec(`./../cpp/open.sh ${filename}`);
-        resolve(script_response)
-    })
+function readSource(body)
+{
+    
+    var contents = fs.readFileSync('./../cpp/examples/' +body.filename+'.cpp', 'utf8');
+    return contents;
 }
 
-function getPosts() {
-    return new Promise((resolve, reject) => {
-        if (posts.length === 0) {
-            reject({
-                message: 'no posts available',
-                status: 202
-            })
-        }
+function manualInput(body)
+{
+    var maninput = body.maninput; 
+    programProcess.stdin.write(maninput+'\n');
+    return 'manual input request complete';
 
-        resolve(posts)
-    })
 }
 
-function getPost(id) {
-    return new Promise((resolve, reject) => {
-        helper.mustBeInArray(posts, id)
-        .then(post => resolve(post))
-        .catch(err => reject(err))
-    })
+function setLineBreakpoint(body)
+{
+    var line = body.line; 
+    programProcess.stdin.write('b :'+line+' \n');
+    return 'breakpoint line request complete';
+
 }
 
-function insertPost(newPost) {
-    return new Promise((resolve, reject) => {
-        const id = { id: helper.getNewId(posts) }
-        const date = { 
-            createdAt: helper.newDate(),
-            updatedAt: helper.newDate()
-        } 
-        newPost = { ...id, ...date, ...newPost }
-        posts.push(newPost)
-        helper.writeJSONFile(filename, posts)
-        resolve(newPost)
-    })
+function setAddresBreakpoint(body)
+{
+    var addres = body.addres; 
+    programProcess.stdin.write('b 0x'+addres+' \n');
+    return 'breakpoint addres request complete';
+
 }
 
-function updatePost(id, newPost) {
-    return new Promise((resolve, reject) => {
-        helper.mustBeInArray(posts, id)
-        .then(post => {
-            const index = posts.findIndex(p => p.id == post.id)
-            id = { id: post.id }
-            const date = {
-                createdAt: post.createdAt,
-                updatedAt: helper.newDate()
-            } 
-            posts[index] = { ...id, ...date, ...newPost }
-            helper.writeJSONFile(filename, posts)
-            resolve(posts[index])
-        })
-        .catch(err => reject(err))
-    })
+function continueExecution(body)
+{
+    programProcess.stdin.write('cont \n');
+    return 'continue request complete';
+
 }
 
-function deletePost(id) {
-    return new Promise((resolve, reject) => {
-        helper.mustBeInArray(posts, id)
-        .then(() => {
-            posts = posts.filter(p => p.id !== id)
-            helper.writeJSONFile(filename, posts)
-            resolve()
-        })
-        .catch(err => reject(err))
-    })
+function stepExecution(body)
+{
+    programProcess.stdin.write('step \n');
+    return 'step request complete';
+
 }
 
-module.exports = {
-    insertPost,
-    run,
-    getPosts,
-    getPost, 
-    updatePost,
-    deletePost
+function nextExecution(body)
+{
+    programProcess.stdin.write('next \n');
+    return 'next request complete';
+
+}
+
+function finishExecution(body)
+{
+    programProcess.stdin.write('finish \n');
+    return 'finish request complete';
+
+}
+
+function showVariables(body)
+{
+    programProcess.stdin.write('variables \n');
+    return 'variable request complete';
+
+}
+
+function showRegisters(body)
+{
+    programProcess.stdin.write('register dump \n');
+    return 'register request complete';
+
+}
+
+function setProgramProcess(process)
+{
+    programProcess = process;
+}
+
+module.exports = {   
+    setProgramProcess,
+    continueExecution,
+    stepExecution,
+    nextExecution,
+    finishExecution,
+    showVariables,
+    showRegisters,
+    manualInput,
+    setLineBreakpoint,
+    setAddresBreakpoint,
+    readSource
 }
