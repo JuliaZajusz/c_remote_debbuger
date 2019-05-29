@@ -36,7 +36,7 @@ const util = require('util');
 const execPromisify = util.promisify(require('child_process').exec);
 
 async function compileFile(fileName, executeFileName) {
-    const { stdout, stderr } = await execPromisify(`gcc -g ./public/uploads/${fileName} -o ./public/uploads/${executeFileName} -lstdc++`);
+    const { stdout, stderr } = await execPromisify(`gcc -g ./public/uploads/${fileName} -o ./public/uploads/${executeFileName} -lstdc++ -gdwarf-2 -O0`);
     console.log('stdout:', stdout);
     if(stderr) {
         console.log('stderr:', stderr);

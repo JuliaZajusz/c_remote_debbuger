@@ -25,6 +25,28 @@ npm run dev
 http://localhost:1337/
 ```
 
+##Debugger commands:
+    `cont`
+    `break 0xADDRESS`
+    `break filename.cpp:lineNumber` - e.g. break variable.cpp:4
+    `break functionName`
+    `step` -step_in;
+    `next` -step_over;
+    `stepOut` -step_out;
+    `finish` - exit(0);
+    `register dump` - dump_registers;
+    `register read registerName` - get register value;
+    `register write registerName 0xVALUE` - set register value;
+    `memory read 0xADDRESS` - read memory;
+    `memory write 0xADDRESS 0xVALUE` - write memory;
+    `variables` - read variables;
+    `backtrace` - print backtrace;
+    `symbol functionName` - print addresses od symbols?
+    
+    `stepi` -single_step_instruction_with_breakpoint_check();
+
+    
+
 ##Api requests:
 
 POST
