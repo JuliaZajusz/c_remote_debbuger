@@ -1,9 +1,28 @@
-Docker is required :)
+##Requirements:
+nodejs
+npm
+cmake
+
+##Arrangements:
+```
+cd nodejs
+npm i
+cd ../cpp
+cmake CMakeLists.txt
+make
+```
+
 
 ##Run webapp:
 ```
 cd nodejs
 npm run dev
+```
+
+
+##App:
+```
+http://localhost:1337/
 ```
 
 ##Api requests:
@@ -83,11 +102,3 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/re
 
 DOCKER
 https://devblogs.microsoft.com/cppblog/c-development-with-docker-containers-in-visual-studio-code/
-
-
-
-#Useful commands
-docker exec -t  59585fc2f136 ./minidbg hello input
-docker exec 59585fc2f136 cat -E input
-docker exec -ti 59585fc2f136 nano input
- 
