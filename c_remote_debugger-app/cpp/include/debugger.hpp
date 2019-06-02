@@ -64,6 +64,7 @@ namespace minidbg {
         void set_breakpoint_at_source_line(const std::string& file, unsigned line);
         void print_source(const std::string& file_name, unsigned line, unsigned n_lines_context=2);
         auto lookup_symbol(const std::string&) -> std::vector<symbol>;
+        int findVariableSize(int *result, dwarf::value val);
 
     private:
         void single_step_instruction(); //single step without checking breakpoints

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <inttypes.h>
 
 
 #include "linenoise.h"
@@ -38,38 +39,109 @@ private:
     pid_t m_pid;
 };
 
+//dump tree call:
+//for (auto cu : m_dwarf.compilation_units()) {
+//        printf("--- <%" PRIx64 ">\n", cu.get_section_offset());
+//        dump_tree(cu.root());
+//    }
+void
+dump_tree(const dwarf::die &node, int depth = 0)
+{
+    printf("%*.s<%" PRIx64 "> %s\n", depth, "",
+            node.get_section_offset(),
+            to_string(node.tag).c_str());
+
+    for (auto &attr : node.attributes())
+        printf("%*.s      %s %s\n", depth, "",
+               to_string(attr.first).c_str(),
+               to_string(attr.second).c_str());
+    for (auto &child : node)
+        dump_tree(child, depth + 1);
+}
+
+int getHex(std::string hexstr) {
+    return (int)strtol(hexstr.c_str(), 0, 16);
+}
+
+void
+find_node(int & result, dwarf::value val, const dwarf::die &node, int depth = 0)
+{
+    using namespace dwarf;
+    long length = to_string(val).size();
+    char *buff;
+    buff= new char[length];
+    sprintf(buff, "<0x%" PRIx64 ">", node.get_section_offset());
+
+    if(strcmp(buff, to_string(val).c_str()) == 0) {
+        int size = 0;
+        if(node.tag == DW_TAG::base_type) {
+            value byte_size = node[DW_AT::byte_size];
+            std::string string_byte_size = to_string(byte_size);
+            size = getHex(string_byte_size);
+        }
+        result = size;
+
+    }
+    for (auto &child : node)
+        find_node(result, val, child, depth + 1);
+}
+
+int debugger::findVariableSize(int *result, dwarf::value val) {
+    using namespace dwarf;
+        for (auto cu : m_dwarf.compilation_units()) {
+            find_node(*result,val, cu.root());
+    }
+}
+
 void debugger::read_variables() {
     using namespace dwarf;
 
-    auto func = get_function_from_pc(get_pc());
+    auto pc = get_pc();
 
-    for (const auto &die : func) {
-        if (die.tag == DW_TAG::variable) {
-            auto loc_val = die[DW_AT::location];
 
-            //only supports exprlocs for now
-            if (loc_val.get_type() == value::type::exprloc) {
-                ptrace_expr_context context{m_pid};
-                auto result = loc_val.as_exprloc().evaluate(&context);
 
-                switch (result.location_type) {
-                    case expr_result::type::address: {
-                        auto value = read_memory(result.value);
-                        std::cout << at_name(die) << " (0x" << std::hex << result.value << ") = " << value << std::endl;
-                        break;
+    auto func = get_function_from_pc(pc);
+
+    if(func.valid()) {
+        for (const auto &die : func) {
+            if (die.tag == DW_TAG::variable) {
+                 value loc_val = die[DW_AT::location];
+                 int size;
+                value type = die[DW_AT::type];
+                findVariableSize(&size, type);
+
+                if (loc_val.get_type() == value::type::exprloc) {
+                    ptrace_expr_context context{m_pid};
+                    expr_result result = loc_val.as_exprloc().evaluate(&context);
+
+                    switch (result.location_type) {
+                        case expr_result::type::address: {
+                            uint64_t value = read_memory(result.value);
+                            char *buff;
+                            buff= new char[21];
+                            sprintf(buff, "%" PRIx64, value);
+
+                            std::string str = std::string(buff);
+                            if(str.size()>size) {
+                                str.erase(0, str.size() - size);
+                            } //values are in hex
+                            std::cout << at_name(die) << " (0x" << std::hex << result.value << ") = " <<str
+                                      << std::endl;
+                            break;
+                        }
+
+                        case expr_result::type::reg: {
+                            auto value = get_register_value_from_dwarf_register(m_pid, result.value);
+                            std::cout << at_name(die) << " (reg " << result.value << ") = " << value << std::endl;
+                            break;
+                        }
+
+                        default:
+                            throw std::runtime_error{"Unhandled variable location"};
                     }
-
-                    case expr_result::type::reg: {
-                        auto value = get_register_value_from_dwarf_register(m_pid, result.value);
-                        std::cout << at_name(die) << " (reg " << result.value << ") = " << value << std::endl;
-                        break;
-                    }
-
-                    default:
-                        throw std::runtime_error{"Unhandled variable location"};
+                } else {
+                    throw std::runtime_error{"Unhandled variable location"};
                 }
-            } else {
-                throw std::runtime_error{"Unhandled variable location"};
             }
         }
     }
@@ -233,15 +305,16 @@ dwarf::die debugger::get_function_from_pc(uint64_t pc) {
         if (die_pc_range(cu.root()).contains(pc)) {
             for (const auto &die : cu.root()) {
                 if (die.tag == dwarf::DW_TAG::subprogram) {
-                    if (die_pc_range(die).contains(pc)) {
+                    auto range = die_pc_range(die);
+                    if (range.contains(pc)) {
                         return die;
                     }
                 }
             }
         }
     }
-
-    throw std::out_of_range{"Cannot find function"};
+    std::cout<<"Cannot find any variables\n";
+    return dwarf::die();
 }
 
 dwarf::line_table::iterator debugger::get_line_entry_from_pc(uint64_t pc) {
