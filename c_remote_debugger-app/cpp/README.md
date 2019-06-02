@@ -45,21 +45,11 @@ http://localhost:1337/
     
     `stepi` -single_step_instruction_with_breakpoint_check();
 
-    
+   
 
-##Api requests:
+#Debugger
 
-POST
-```
-http://localhost:1337/api/v1/posts/run
-{
-	"filename": "hello"
-}
-```
-
-
-
-##Build:
+##Build cpp part:
 
 ```
 cmake CMakeLists.txt
@@ -67,9 +57,6 @@ make
 ```
 
 ##Run
-From localization
-<your_path>/c_remote_debugger/c_remote_debugger-app/minidbg-tut_setup/cmake-build-debug
-
 run:
 ```./minidbg hello```
 
@@ -83,6 +70,9 @@ where addr is line address from `objdump -d <filename>` in main section
 
 on line:
 ```break filename.cpp:line_number```
+
+go to next breakpoint:
+```cont```
 
 
 
@@ -124,3 +114,16 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/re
 
 DOCKER
 https://devblogs.microsoft.com/cppblog/c-development-with-docker-containers-in-visual-studio-code/
+
+
+##Usefull commands
+
+```
+dwarfdump hello > dwarfdump_hello.txt
+```
+```
+objdump -d variable
+```
+```
+objdump -h variable
+```
