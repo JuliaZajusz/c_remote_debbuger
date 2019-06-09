@@ -122,8 +122,8 @@ void debugger::read_variables() {
                             sprintf(buff, "%" PRIx64, value);
 
                             std::string str = std::string(buff);
-                            if(str.size()>size) {
-                                str.erase(0, str.size() - size);
+                            if(str.size()>2*size){
+                                str.erase(0, str.size() - 2*size);
                             } //values are in hex
                             std::cout << at_name(die) << " (0x" << std::hex << result.value << ") = " <<str
                                       << std::endl;
